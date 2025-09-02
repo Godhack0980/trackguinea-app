@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isUserAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isTransporterAssigned(resource) {
+        return isUserAuthenticated() && request.auth.uid == resource.data.assignedTo;
+    }
+
+    function isApplying() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicants']);
+    }
+
+    match /users/{userId} {
+      allow read: if isUserAuthenticated();
+      allow create: if isUserAuthenticated();
+      allow update: if isOwner(userId);
+    }
+    
+    match /requests/{requestId} {
+      allow read: if isUserAuthenticated();
+      allow create: if isUserAuthenticated() && isOwner(request.resource.data.clientId);
+      allow update: if 
+          // Rule 1: The client who owns the request can update it
+          isOwner(request.resource.data.clientId) || 
+          
+          // Rule 2: The assigned transporter can ONLY update the 'status' field
+          (isTransporterAssigned(get(/databases/$(database)/documents/requests/$(requestId))) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+
+          // Rule 3: Any authenticated user (a transporter) can apply, which only modifies the 'applicants' array
+          (isUserAuthenticated() && isApplying());
+
+      allow delete: if false; // Deletes should be handled by status changes
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update: if isUserAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isUserAuthenticated();
+    }
+  }
+}

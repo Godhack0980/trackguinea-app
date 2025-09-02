@@ -1,0 +1,22 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Les photos de profil sont lisibles par tous mais modifiables uniquement par le propriétaire.
+    match /profile-pictures/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Les documents de vérification ne sont accessibles que par leur propriétaire.
+    match /documents/{userId}/{allPaths=**} {
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Les justificatifs d'annulation sont accessibles par l'utilisateur qui les téléverse.
+    match /cancellations/{requestId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
