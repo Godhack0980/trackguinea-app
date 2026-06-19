@@ -16,7 +16,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/context/auth-context";
 import TransportRequestCard from "@/components/transport-request-card";
-import { Loader2, List, AlertTriangle } from "lucide-react";
+import { Loader2, List, AlertTriangle, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateTransportRequestForm } from "@/components/create-request-form";
 import { Button } from "@/components/ui/button";
@@ -132,52 +132,94 @@ export default function ClientRequestsPage() {
 
   if (userData && userData.isVerified === false) {
     return (
-        <Card className="shadow-md rounded-2xl border-border">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-accent"><AlertTriangle className="text-destructive"/>Profil en attente de vérification</CardTitle>
-                <CardDescription>Votre compte doit être vérifié par un administrateur avant de pouvoir créer des demandes de transport.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm text-muted-foreground">Pour faire vérifier votre compte, veuillez fournir les documents requis.</p>
-                <Button asChild className="mt-4">
+        <div className="min-h-screen bg-slate-50">
+          <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <AlertTriangle className="h-6 w-6 text-orange-700" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">Profil en attente de vérification</h1>
+                <p className="mt-2 text-slate-600 text-sm">Votre compte doit être vérifié par un administrateur avant de pouvoir créer des demandes de transport.</p>
+              </div>
+            </div>
+          </div>
+          <div className="px-6 lg:px-8 py-8">
+            <Card className="border-0 shadow-md rounded-xl">
+              <CardContent className="p-6">
+                <p className="text-slate-600 mb-6">Pour faire vérifier votre compte, veuillez fournir les documents requis.</p>
+                <Button asChild className="bg-teal-600 hover:bg-teal-700">
                   <Link href="/dashboard/client/documents">
-                    Aller à la page des documents
+                    <Plus className="h-4 w-4 mr-2" /> Aller à la page des documents
                   </Link>
                 </Button>
-            </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
     )
   }
 
   return (
-    <div className="p-6 space-y-6">
-        <h1 className="text-3xl font-bold text-primary">Mes Demandes de Transport</h1>
-        <CreateTransportRequestForm />
-        <Card className="shadow-md rounded-2xl border-border">
-        <CardHeader>
-            <CardTitle className="text-lg text-accent">Demandes actives</CardTitle>
-            <CardDescription>
-            Voici la liste de toutes vos demandes de transport en attente ou en cours.
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-teal-100 rounded-lg">
+            <List className="h-6 w-6 text-teal-700" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-slate-900">Mes Demandes de Transport</h1>
+            <p className="mt-2 text-slate-600 text-sm">Créez et gérez vos demandes de transport</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* New Request Form Section */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Créer une nouvelle demande</h2>
+            <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+              <CardContent className="p-6">
+                <CreateTransportRequestForm />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Active Requests Section */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Demandes actives</h2>
             {loadingRequests || loadingAuth ? (
-                <div className="flex justify-center items-center h-40">
-                    <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
-                </div>
+              <Card className="border-0 shadow-md rounded-xl bg-white">
+                <CardContent className="p-12 flex justify-center items-center">
+                  <div className="text-center">
+                    <Loader2 className="animate-spin h-8 w-8 text-teal-600 mx-auto" />
+                    <p className="mt-4 text-slate-600">Chargement de vos demandes...</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : activeRequests.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground">
-                <List className="mx-auto h-12 w-12" />
-                <p className="mt-4 font-semibold">Aucune demande active pour le moment.</p>
-                <p className="text-sm mt-1">Utilisez le formulaire ci-dessus pour créer votre première demande de transport.</p>
-            </div>
+              <Card className="border-0 shadow-md rounded-xl bg-white">
+                <CardContent className="p-12">
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center h-16 w-16 bg-slate-100 rounded-full mb-4">
+                      <List className="h-8 w-8 text-slate-400" />
+                    </div>
+                    <p className="font-semibold text-slate-900">Aucune demande active pour le moment.</p>
+                    <p className="text-sm text-slate-600 mt-2">Utilisez le formulaire ci-dessus pour créer votre première demande de transport.</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-            activeRequests.map((request) => (
-                <TransportRequestCard key={request.id} request={request} onAssign={handleAssign} onCancellationRequest={handleCancellationRequest} />
-            ))
+              <div className="grid gap-4">
+                {activeRequests.map((request) => (
+                  <TransportRequestCard key={request.id} request={request} onAssign={handleAssign} onCancellationRequest={handleCancellationRequest} />
+                ))}
+              </div>
             )}
-        </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

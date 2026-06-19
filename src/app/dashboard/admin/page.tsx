@@ -22,6 +22,7 @@ import {
 } from 'chart.js';
 import AdminMap from '@/components/admin-map';
 import type { TransportRequest } from '@/ai/types';
+import { LineChart, Users, TrendingUp, AlertCircle } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -154,60 +155,130 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-primary">Tableau de Bord Administrateur</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader>
-             <CardTitle className="text-sm font-medium text-muted-foreground">Clients Inscrits</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{clientsCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Transporteurs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{transportersCount}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Demandes en attente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{requestsStats.pending}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Demandes en cours</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{requestsStats.inProgress}</p>
-          </CardContent>
-        </Card>
-
-        <div className="lg:col-span-2">
-          <Card className="shadow-md rounded-2xl border-border">
-              <CardHeader>
-                 <CardTitle className="text-lg text-accent">Demandes de la semaine</CardTitle>
-              </CardHeader>
-              <CardContent className="p-4">
-                   <div className="h-[250px]">
-                      <Bar data={chartData} options={chartOptions} />
-                  </div>
-              </CardContent>
-          </Card>
+    <div className="min-h-screen bg-slate-50">
+      <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-teal-100 rounded-lg">
+            <LineChart className="h-6 w-6 text-teal-700" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-slate-900">Tableau de Bord Administrateur</h1>
+            <p className="mt-2 text-slate-600 text-sm">Gérez la plateforme et suivez les statistiques</p>
+          </div>
         </div>
-        
-         <div className="lg:col-span-2">
-           <AdminMap activeJobs={activeJobs} />
+      </div>
+
+      <div className="px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* Key Metrics */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Métriques Principales</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Clients Inscrits</p>
+                      <p className="mt-2 text-3xl font-bold text-slate-900">{clientsCount}</p>
+                    </div>
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <Users className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Transporteurs</p>
+                      <p className="mt-2 text-3xl font-bold text-slate-900">{transportersCount}</p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <TrendingUp className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Demandes en attente</p>
+                      <p className="mt-2 text-3xl font-bold text-slate-900">{requestsStats.pending}</p>
+                    </div>
+                    <div className="p-3 bg-orange-100 rounded-lg">
+                      <AlertCircle className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Demandes en cours</p>
+                      <p className="mt-2 text-3xl font-bold text-slate-900">{requestsStats.inProgress}</p>
+                    </div>
+                    <div className="p-3 bg-teal-100 rounded-lg">
+                      <LineChart className="h-6 w-6 text-teal-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-teal-50 to-cyan-50 px-6 py-5">
+                  <CardTitle className="text-teal-900">Demandes de la semaine</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="h-[300px]">
+                    <Bar data={chartData} options={chartOptions} />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div>
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-teal-50 to-cyan-50 px-6 py-5">
+                  <CardTitle className="text-teal-900 text-base">Résumé</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6 space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm text-slate-600">Demandes terminées</span>
+                      <span className="font-semibold text-slate-900">{requestsStats.completed}</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{width: '45%'}}></div>
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-xs text-slate-600">Taux de complétion: <span className="font-semibold text-slate-900">45%</span></p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Map Section */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Suivi en Temps Réel</h2>
+            <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+              <CardContent className="p-0">
+                <AdminMap activeJobs={activeJobs} />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

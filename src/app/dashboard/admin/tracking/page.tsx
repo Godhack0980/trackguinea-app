@@ -2,7 +2,7 @@
 "use client"
 
 import React from 'react';
-import { useCollectionData } from 'react-firebase-hooks/firestore';
+import { useCollection } from 'react-firebase-hooks/firestore';
 import { db } from '@/lib/firebase';
 import {
   collection,
@@ -19,7 +19,15 @@ const AdminGlobalTrackingPage = () => {
       where('status', '==', 'En cours')
   );
 
-  const [activeJobs, loading, error] = useCollectionData(activeJobsQuery, { idField: 'id' });
+  const [activeJobsSnapshot, loading, error] = useCollection(activeJobsQuery);
+
+  const activeJobs = React.useMemo(() => {
+    if (!activeJobsSnapshot) return [];
+    return activeJobsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as any[];
+  }, [activeJobsSnapshot]);
 
   if (error) {
     console.error("Erreur de chargement des courses:", error);
@@ -40,7 +48,7 @@ const AdminGlobalTrackingPage = () => {
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
             ) : (
-                <AdminMap activeJobs={activeJobs || []} />
+                <AdminMap activeJobs={activeJobs} />
             )}
         </CardContent>
       </Card>

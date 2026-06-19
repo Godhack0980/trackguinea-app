@@ -134,196 +134,275 @@ export default function ProfilePage() {
 
   if (loadingData || loadingAuth) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
       </div>
     )
   }
 
   if (error) {
-     return <Card className="shadow-md rounded-2xl border-border"><CardHeader><CardTitle>Erreur</CardTitle></CardHeader><CardContent><p>Impossible de charger le profil. {error.message}</p></CardContent></Card>
+     return (
+       <div className="min-h-screen bg-slate-50">
+         <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+           <h1 className="text-3xl font-bold text-slate-900">Mon Profil</h1>
+         </div>
+         <div className="px-6 lg:px-8 py-8">
+           <Card className="border-0 shadow-md rounded-xl bg-red-50 border border-red-200">
+             <CardContent className="p-6">
+               <p className="text-red-700">Impossible de charger le profil. {error.message}</p>
+             </CardContent>
+           </Card>
+         </div>
+       </div>
+     )
   }
 
   if (!userData) {
     return (
-        <Card className="shadow-md rounded-2xl border-border">
-            <CardHeader>
-                <CardTitle>Profil non disponible</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <p>Les informations de l'utilisateur ne sont pas disponibles pour le moment.</p>
+      <div className="min-h-screen bg-slate-50">
+        <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+          <h1 className="text-3xl font-bold text-slate-900">Mon Profil</h1>
+        </div>
+        <div className="px-6 lg:px-8 py-8">
+          <Card className="border-0 shadow-md rounded-xl">
+            <CardContent className="p-6">
+              <p className="text-slate-600">Les informations de l'utilisateur ne sont pas disponibles pour le moment.</p>
             </CardContent>
-        </Card>
+          </Card>
+        </div>
+      </div>
     )
   }
   
 
   return (
-    <div className="p-6 space-y-6">
-       <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold text-primary">Mon Profil</h1>
-            <Button variant="outline" onClick={handleEditToggle}>
-            {isEditing ? <><X className="mr-2 h-4 w-4" /> Annuler</> : <><Edit className="mr-2 h-4 w-4" /> Modifier le profil</>}
-            </Button>
-       </div>
-      <Card className="shadow-md rounded-2xl border-border">
-         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CardHeader className="flex flex-col items-center text-center space-y-4">
-                 <div className="relative">
-                    <Avatar className="h-24 w-24">
-                        <AvatarImage src={avatarPreview || `https://placehold.co/96x96/E0F8F8/008080/png?text=${getInitials()}`} asChild>
-                            <Image src={avatarPreview || `https://placehold.co/96x96/E0F8F8/008080/png?text=${getInitials()}`} width={96} height={96} alt="Avatar"/>
-                        </AvatarImage>
-                        <AvatarFallback className="text-3xl">{getInitials()}</AvatarFallback>
+    <div className="min-h-screen bg-slate-50">
+      <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Mon Profil</h1>
+            <p className="mt-2 text-slate-600 text-sm">Gérez vos informations personnelles</p>
+          </div>
+          <Button variant={isEditing ? "ghost" : "default"} onClick={handleEditToggle} className={isEditing ? "text-slate-600 hover:text-red-600" : "bg-teal-600 hover:bg-teal-700"}>
+            {isEditing ? <><X className="mr-2 h-4 w-4" /> Annuler</> : <><Edit className="mr-2 h-4 w-4" /> Modifier</>}
+          </Button>
+        </div>
+      </div>
+
+      <div className="px-6 lg:px-8 py-8">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Profile Header */}
+            <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+              <div className="h-24 bg-gradient-to-r from-teal-500 to-cyan-500"></div>
+              <CardContent className="px-6 pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-6 -mt-12 mb-6">
+                  <div className="relative">
+                    <Avatar className="h-32 w-32 border-4 border-white shadow-lg">
+                      <AvatarImage src={avatarPreview || `https://placehold.co/128x128/008080/FFFFFF/png?text=${getInitials()}`} />
+                      <AvatarFallback className="bg-teal-100 text-teal-700 text-3xl">{getInitials()}</AvatarFallback>
                     </Avatar>
                     {isEditing && (
-                        <>
+                      <>
                         <input
-                            type="file"
-                            accept="image/png, image/jpeg"
-                            ref={fileInputRef}
-                            onChange={handleAvatarChange}
-                            className="hidden"
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          ref={fileInputRef}
+                          onChange={handleAvatarChange}
+                          className="hidden"
                         />
-                         <Button type="button" size="icon" variant="secondary" className="absolute bottom-0 right-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
-                            <Camera className="h-4 w-4"/>
-                            <span className="sr-only">Changer la photo</span>
-                         </Button>
-                        </>
+                        <Button 
+                          type="button" 
+                          size="icon" 
+                          className="absolute bottom-2 right-2 rounded-full bg-teal-600 hover:bg-teal-700 shadow-lg"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Camera className="h-4 w-4"/>
+                        </Button>
+                      </>
                     )}
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                      {userData.firstName} {userData.lastName}
+                      {userData.isVerified && userData.role === 'transporter' && (
+                        <ShieldCheck className="h-6 w-6 text-green-500" />
+                      )}
+                    </h2>
+                    <p className="text-sm text-slate-600 mt-1 capitalize">
+                      {userData.role === 'client' && 'Client'}
+                      {userData.role === 'transporter' && 'Transporteur'}
+                      {userData.role === 'client-company' && 'Entreprise (Client)'}
+                      {userData.role === 'transporter-company' && 'Entreprise (Transporteur)'}
+                      {userData.role === 'admin' && 'Administrateur'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                    <CardTitle className="text-3xl flex items-center gap-2">
-                    {userData.firstName} {userData.lastName}
-                    {userData.role === 'transporter' && userData.isVerified && <ShieldCheck className="h-6 w-6 text-green-500" title="Vérifié"/>}
-                    </CardTitle>
-                    <CardDescription className="capitalize">Connecté en tant que: {userData.role}</CardDescription>
-                </div>
-                </CardHeader>
-                <CardContent className="mt-6 max-w-lg mx-auto">
-                    {isEditing ? (
-                        <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="firstName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Prénom</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="lastName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                        <FormLabel>Nom</FormLabel>
-                                        <FormControl>
-                                            <Input {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                        </div>
-                        <FormField
-                                control={form.control}
-                                name="phone"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Téléphone</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <div className="flex justify-end gap-2">
-                                <Button type="button" variant="ghost" onClick={handleEditToggle}>Annuler</Button>
-                                <Button type="submit" disabled={isUploading || form.formState.isSubmitting}>
-                                    {(isUploading || form.formState.isSubmitting) ? <Loader2 className="animate-spin"/> : <><Save className="mr-2 h-4 w-4"/> Enregistrer</>}
-                                </Button>
-                            </div>
-                        </div>
-                    ) : (
-                    <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md">
-                            <Mail className="h-5 w-5 text-muted-foreground"/>
-                            <span className="font-medium">{userData.email}</span>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md">
-                            <Phone className="h-5 w-5 text-muted-foreground"/>
-                            <span className="font-medium">{userData.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md">
-                            <UserCog className="h-5 w-5 text-muted-foreground"/>
-                            <span className="font-medium capitalize">{userData.role}</span>
-                        </div>
-                        {userData.role === 'transporter' && (
-                        <>
-                            <Card className="shadow-md rounded-2xl border-border">
-                                <CardHeader>
-                                    <CardTitle className="text-lg text-accent flex items-center"><Truck className="mr-3"/> Informations du véhicule</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Type de véhicule</span>
-                                        <span className="font-medium capitalize">{userData.vehicleType}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Immatriculation</span>
-                                        <span className="font-medium uppercase">{userData.vehicleRegistration}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Type de permis</span>
-                                        <span className="font-medium">{userData.licenseType}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                            <div className="grid grid-cols-2 gap-4 text-center">
-                                <Card className="p-3 shadow-md rounded-2xl border-border">
-                                    <p className="text-sm text-muted-foreground">Évaluation</p>
-                                    <p className="font-bold text-lg flex items-center justify-center gap-1">
-                                        {userData.rating || 'N/A'} <Star className="h-4 w-4 text-amber-400" fill="currentColor"/>
-                                    </p>
-                                </Card>
-                                <Card className="p-3 shadow-md rounded-2xl border-border">
-                                    <p className="text-sm text-muted-foreground">Courses terminées</p>
-                                    <p className="font-bold text-lg">{userData.jobsCompleted || 0}</p>
-                                </Card>
-                                <Card className="p-3 shadow-md rounded-2xl border-border">
-                                    <p className="text-sm text-muted-foreground">Années d'expérience</p>
-                                    <p className="font-bold text-lg">{userData.experienceYears || 0}</p>
-                                </Card>
-                            </div>
-                            {userData.isVerified === false && (
-                                <Badge variant="destructive" className="w-full justify-center text-base p-2">
-                                <AlertTriangle className="mr-2" />
-                                Profil en attente de vérification
-                                </Badge>
-                            )}
-                        </>
-                        )}
-                    </div>
-                    )}
-                </CardContent>
-                 {isEditing && (
-                    <CardFooter>
-                        <p className="text-xs text-muted-foreground text-center w-full">Pour modifier votre email ou d'autres informations sensibles, veuillez contacter le support.</p>
-                    </CardFooter>
-                )}
-            </form>
-        </Form>
-      </Card>
-    </div>
-  )
-}
 
-    
+                {/* Contact Information */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                    <Mail className="h-5 w-5 text-slate-400"/>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</p>
+                      <p className="text-sm font-medium text-slate-900">{userData.email}</p>
+                    </div>
+                  </div>
+                  {isEditing ? (
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input placeholder="Téléphone" {...field} className="mt-2"/>
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  ) : (
+                    <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                      <Phone className="h-5 w-5 text-slate-400"/>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Téléphone</p>
+                        <p className="text-sm font-medium text-slate-900">{userData.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Editable Information */}
+            {isEditing && (
+              <Card className="border-0 shadow-md rounded-xl bg-white">
+                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-teal-50 to-cyan-50">
+                  <CardTitle>Informations Personnelles</CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Prénom</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Prénom" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nom</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Nom" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="mt-6 flex justify-end gap-3">
+                    <Button type="button" variant="ghost" onClick={handleEditToggle}>Annuler</Button>
+                    <Button type="submit" disabled={isUploading || form.formState.isSubmitting} className="bg-teal-600 hover:bg-teal-700">
+                      {(isUploading || form.formState.isSubmitting) ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2"/>
+                          Enregistrement...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2"/>
+                          Enregistrer
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Transporter Information */}
+            {userData.role === 'transporter' && (
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardHeader className="border-b border-slate-100 bg-gradient-to-r from-teal-50 to-cyan-50">
+                  <CardTitle className="flex items-center gap-2">
+                    <Truck className="h-5 w-5 text-teal-600"/> Informations du Véhicule
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Type de véhicule</p>
+                      <p className="text-sm font-medium text-slate-900 mt-2 capitalize">{userData.vehicleType || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Immatriculation</p>
+                      <p className="text-sm font-medium text-slate-900 mt-2 uppercase">{userData.vehicleRegistration || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Type de permis</p>
+                      <p className="text-sm font-medium text-slate-900 mt-2">{userData.licenseType || '—'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Années d'expérience</p>
+                      <p className="text-sm font-medium text-slate-900 mt-2">{userData.experienceYears || 0} ans</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Statistics */}
+            {userData.role === 'transporter' && (
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 mb-4">Statistiques</h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="border-0 shadow-md rounded-xl bg-white">
+                    <CardContent className="p-6">
+                      <div className="text-center">
+                        <p className="text-3xl font-bold text-teal-600 flex items-center justify-center gap-1">
+                          {userData.rating || '0'} <Star className="h-5 w-5 text-yellow-400" fill="currentColor"/>
+                        </p>
+                        <p className="text-xs text-slate-600 uppercase tracking-wide mt-2">Évaluation</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-0 shadow-md rounded-xl bg-white">
+                    <CardContent className="p-6">
+                      <div className="text-center">
+                        <p className="text-3xl font-bold text-slate-900">{userData.jobsCompleted || 0}</p>
+                        <p className="text-xs text-slate-600 uppercase tracking-wide mt-2">Courses terminées</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Verification Status */}
+            {userData.isVerified === false && userData.role === 'transporter' && (
+              <Card className="border-0 shadow-md rounded-xl bg-orange-50 border border-orange-200">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <AlertTriangle className="h-6 w-6 text-orange-600 flex-shrink-0 mt-0.5"/>
+                    <div>
+                      <h3 className="font-semibold text-orange-900">Profil en attente de vérification</h3>
+                      <p className="text-sm text-orange-800 mt-2">Votre profil doit être vérifié par un administrateur avant de pouvoir accéder à toutes les fonctionnalités.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </form>
+        </Form>
+      </div>
+    </div>
+  );
+}

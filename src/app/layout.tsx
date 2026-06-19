@@ -4,8 +4,8 @@ import { Toaster } from '@/components/ui/toaster';
 import { Poppins, PT_Sans } from 'next/font/google'
 
 export const metadata: Metadata = {
-  title: 'TrackGuinea',
-  description: 'Plateforme de mise en relation entre transporteurs et clients en Guinée.',
+  title: 'TransConnekt',
+  description: 'TransConnekt — plateforme de mise en relation entre transporteurs et clients en Guinée.',
 };
 
 const poppins = Poppins({

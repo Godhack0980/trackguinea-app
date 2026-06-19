@@ -134,7 +134,7 @@ export default function AvailableTransportersPage() {
                           <div>
                             <CardTitle className="text-xl flex items-center gap-1.5">
                                 {typedTransporter.firstName} {typedTransporter.lastName}
-                                {typedTransporter.isVerified && <ShieldCheck className="h-5 w-5 text-green-500" title="Vérifié" />}
+                                {typedTransporter.isVerified && <span title="Vérifié"><ShieldCheck className="h-5 w-5 text-green-500" /></span>}
                             </CardTitle>
                             <CardDescription>Transporteur Poids Lourd</CardDescription>
                           </div>

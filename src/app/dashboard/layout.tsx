@@ -244,13 +244,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
-        <Sidebar>
-          <SidebarHeader>
+      <div className="flex min-h-screen bg-slate-50">
+        <Sidebar className="border-r border-slate-200 bg-white">
+          <SidebarHeader className="border-b border-slate-100 bg-white px-4 py-5">
             <Logo />
           </SidebarHeader>
-          <SidebarContent>
-            <SidebarMenu>
+          <SidebarContent className="px-2 py-6">
+            <SidebarMenu className="space-y-2">
               {isClient && clientNav}
               {isClientCompany && clientCompanyNav} 
               {isTransporter && transporterNav}
@@ -295,15 +295,17 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                   </SidebarMenuItem>
                 </>
               )}
-              <SidebarMenuItem>
-                <SidebarMenuButton href="/dashboard/profile" isActive={pathname === '/dashboard/profile'} tooltip="Profil">
-                  {isClientCompany || isTransporterCompany ? <Building /> : <User />}
-                  <span>Mon profil</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              <div className="border-t border-slate-100 pt-4 mt-2">
+                <SidebarMenuItem>
+                  <SidebarMenuButton href="/dashboard/profile" isActive={pathname === '/dashboard/profile'} tooltip="Profil">
+                    {isClientCompany || isTransporterCompany ? <Building /> : <User />}
+                    <span>Mon profil</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </div>
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter>
+          <SidebarFooter className="border-t border-slate-100 bg-white px-2 py-4 space-y-3">
              {userData.isAdmin && <RoleSwitcher 
                 currentRole={activeRole} 
                 onRoleChange={(newRole) => {
@@ -313,7 +315,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
              />}
             <SidebarMenu>
               <SidebarMenuItem>
-                <Button onClick={handleLogout} variant="ghost" className="w-full justify-start">
+                <Button onClick={handleLogout} variant="outline" className="w-full justify-start border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200">
                     <LogOut className="mr-2 h-4 w-4"/>
                     <span>Déconnexion</span>
                 </Button>
@@ -322,22 +324,22 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>
-          <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-            <SidebarTrigger className="md:hidden" />
-            <div className="flex-1">
+          <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6 shadow-sm lg:h-[70px] lg:px-8">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="md:hidden" />
             </div>
-            <div className="flex items-center gap-2">
-                <p className="hidden sm:block text-sm font-medium">
-                    Bonjour, {userData?.firstName || userData?.companyName || 'Utilisateur'} !
+            <div className="flex items-center gap-4">
+                <p className="hidden sm:block text-sm font-medium text-slate-700">
+                    {userData?.firstName || userData?.companyName ? `Bienvenue, ${userData?.firstName || userData?.companyName}` : 'Bienvenue'}
                 </p>
                 <Notifications />
-                <Avatar>
+                <Avatar className="h-9 w-9 border border-slate-200">
                 <AvatarImage src={userData?.photoURL || `https://placehold.co/40x40/008080/FFFFFF/png?text=${getInitials()}`} />
-                <AvatarFallback>{getInitials()}</AvatarFallback>
+                <AvatarFallback className="bg-teal-100 text-teal-700 font-medium">{getInitials()}</AvatarFallback>
                 </Avatar>
             </div>
           </header>
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 bg-slate-50">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>

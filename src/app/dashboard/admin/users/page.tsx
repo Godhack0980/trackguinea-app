@@ -42,7 +42,7 @@ export default function AdminUsersPage() {
   const filteredUsers = useMemo(() => {
     if (!users) return [];
     return users.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .map(doc => ({ id: doc.id, ...doc.data() } as any))
       .filter(user => {
         const term = searchTerm.toLowerCase();
         const firstName = user.firstName || '';

@@ -41,7 +41,7 @@ export default function AdminRequestsPage() {
   const filteredRequests = useMemo(() => {
     if (!requests) return [];
     return requests.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .map(doc => ({ id: doc.id, ...doc.data() } as any))
       .filter(req => {
         const term = searchTerm.toLowerCase();
         return (req.clientName?.toLowerCase().includes(term) || req.id.toLowerCase().includes(term));

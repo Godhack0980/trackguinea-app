@@ -26,7 +26,7 @@ export const generateHeroImageFlow = ai.defineFlow(
         }
       });
       // Genkit returns a data URI which can be used directly in the `src` of an image.
-      return media.url;
+      return media?.url || FALLBACK_IMAGE_URL;
     } catch (error) {
       console.error("Hero image generation failed, returning fallback:", error);
       // If there's any error (e.g., billing not enabled), return the reliable fallback URL.

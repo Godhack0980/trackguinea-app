@@ -74,7 +74,7 @@ export default function TransporterProfilePage({ params }: { params: Promise<{ i
               </Avatar>
               <CardTitle className="text-2xl flex items-center gap-2">
                 {transporter.firstName} {transporter.lastName}
-                {transporter.isVerified && <ShieldCheck className="h-6 w-6 text-green-500" title="Vérifié"/>}
+                {transporter.isVerified && <span title="Vérifié"><ShieldCheck className="h-6 w-6 text-green-500"/></span>}
               </CardTitle>
               <CardDescription>
                 Membre depuis {transporter.memberSince ? new Intl.DateTimeFormat('fr-FR', { year: 'numeric', month: 'long' }).format((transporter.memberSince as Timestamp).toDate()) : 'N/A'}

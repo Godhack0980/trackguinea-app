@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/context/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Users2, Car, LineChart } from "lucide-react";
+import { Loader2, Users2, Car, LineChart, Truck, Building } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useCollection, useCollectionData } from "react-firebase-hooks/firestore";
@@ -28,72 +28,139 @@ export default function TransporterCompanyDashboardPage() {
   
   if (loadingAuth || !userData) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
       </div>
     );
   }
 
   const isLoading = loadingDrivers || loadingVehicles || (loadingRequests && !!requestsQuery);
 
-  const stats = [
-    { title: "Chauffeurs", value: isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : driversSnapshot?.size || 0, icon: <Users2/>, description: "Chauffeurs actifs dans votre flotte" },
-    { title: "Véhicules dans la Flotte", value: isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : vehiclesSnapshot?.size || 0, icon: <Car/>, description: "Total des véhicules enregistrés" },
-    { title: "Courses Terminées (Total)", value: isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : requestsSnapshot?.docs.filter(d => d.data().status === 'Terminé').length || 0, icon: <LineChart/>, description: "Historique de toutes les courses" },
-  ]
-
   return (
-    <div className="p-6 space-y-6">
-       <h1 className="text-3xl font-bold text-primary">Tableau de bord - {userData.companyName}</h1>
-       <Card className="shadow-md rounded-2xl border-border">
-            <CardHeader>
-                <CardTitle className="text-lg text-accent">Vue d'ensemble</CardTitle>
-                <CardDescription>Gérez votre flotte et vos opérations de transport.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6 md:grid-cols-3">
-              {stats.map(stat => (
-                 <Card key={stat.title} className="shadow-md rounded-2xl border-border">
-                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                     <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                     <span className="text-muted-foreground">{stat.icon}</span>
-                   </CardHeader>
-                   <CardContent>
-                     <div className="text-2xl font-bold">{stat.value}</div>
-                     <p className="text-xs text-muted-foreground">{stat.description}</p>
-                   </CardContent>
-                 </Card>
-              ))}
-            </CardContent>
-        </Card>
-        
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card className="shadow-md rounded-2xl border-border">
-            <CardHeader>
-              <CardTitle className="text-lg text-accent">Gestion des Chauffeurs</CardTitle>
-              <CardDescription>Consultez la liste de vos chauffeurs, ajoutez-en de nouveaux et gérez leurs informations.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild>
-                <Link href="/dashboard/transporter-company/drivers">
-                  Accéder à la gestion des chauffeurs
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-          <Card className="shadow-md rounded-2xl border-border">
-            <CardHeader>
-              <CardTitle className="text-lg text-accent">Gestion de la Flotte</CardTitle>
-              <CardDescription>Consultez la liste de vos véhicules, ajoutez-en de nouveaux et suivez leur statut.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               <Button asChild>
-                <Link href="/dashboard/transporter-company/fleet">
-                  Accéder à la gestion de la flotte
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+    <div className="min-h-screen bg-slate-50">
+      <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-teal-100 rounded-lg">
+            <Building className="h-6 w-6 text-teal-700" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-slate-900">Tableau de bord - {userData.companyName}</h1>
+            <p className="mt-2 text-slate-600 text-sm">Gérez votre flotte et vos opérations de transport</p>
+          </div>
         </div>
+      </div>
+
+      <div className="px-6 lg:px-8 py-8">
+        <div className="space-y-8">
+          {/* Key Metrics */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Vue d'ensemble</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Drivers Card */}
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Chauffeurs</p>
+                      {isLoading ? (
+                        <Loader2 className="h-6 w-6 animate-spin mt-2 text-teal-600" />
+                      ) : (
+                        <p className="mt-2 text-3xl font-bold text-slate-900">{driversSnapshot?.size || 0}</p>
+                      )}
+                      <p className="text-xs text-slate-500 mt-2">Chauffeurs actifs dans votre flotte</p>
+                    </div>
+                    <div className="p-3 bg-blue-100 rounded-lg">
+                      <Users2 className="h-6 w-6 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Vehicles Card */}
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Véhicules dans la Flotte</p>
+                      {isLoading ? (
+                        <Loader2 className="h-6 w-6 animate-spin mt-2 text-teal-600" />
+                      ) : (
+                        <p className="mt-2 text-3xl font-bold text-slate-900">{vehiclesSnapshot?.size || 0}</p>
+                      )}
+                      <p className="text-xs text-slate-500 mt-2">Total des véhicules enregistrés</p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-lg">
+                      <Car className="h-6 w-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Completed Jobs Card */}
+              <Card className="border-0 shadow-md rounded-xl bg-white overflow-hidden">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-slate-600">Courses Terminées</p>
+                      {isLoading ? (
+                        <Loader2 className="h-6 w-6 animate-spin mt-2 text-teal-600" />
+                      ) : (
+                        <p className="mt-2 text-3xl font-bold text-slate-900">
+                          {requestsSnapshot?.docs.filter(d => d.data().status === 'Terminé').length || 0}
+                        </p>
+                      )}
+                      <p className="text-xs text-slate-500 mt-2">Historique de toutes les courses</p>
+                    </div>
+                    <div className="p-3 bg-orange-100 rounded-lg">
+                      <LineChart className="h-6 w-6 text-orange-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Actions Rapides</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="border-0 shadow-md rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 overflow-hidden hover:shadow-lg transition-shadow">
+                <CardHeader className="border-b border-blue-200">
+                  <CardTitle className="text-blue-900 flex items-center gap-2">
+                    <Users2 className="h-5 w-5" />
+                    Gestion des Chauffeurs
+                  </CardTitle>
+                  <CardDescription className="text-blue-700">Consultez la liste de vos chauffeurs et gérez leurs informations.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700 w-full">
+                    <Link href="/dashboard/transporter-company/drivers">
+                      <Users2 className="mr-2 h-4 w-4" /> Gérer les chauffeurs
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-md rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 overflow-hidden hover:shadow-lg transition-shadow">
+                <CardHeader className="border-b border-green-200">
+                  <CardTitle className="text-green-900 flex items-center gap-2">
+                    <Car className="h-5 w-5" />
+                    Gestion de la Flotte
+                  </CardTitle>
+                  <CardDescription className="text-green-700">Consultez la liste de vos véhicules et leur statut.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <Button asChild className="bg-green-600 hover:bg-green-700 w-full">
+                    <Link href="/dashboard/transporter-company/fleet">
+                      <Car className="mr-2 h-4 w-4" /> Gérer la flotte
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

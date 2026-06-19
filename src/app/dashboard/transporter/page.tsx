@@ -85,97 +85,171 @@ export default function TransporterDashboard() {
     return <p className="text-destructive text-center p-4">Erreur: Impossible de charger les demandes disponibles. ({errorRequests.message})</p>
   }
   
-  const filteredRequests = availableRequests?.docs
+  const filteredRequests = (availableRequests?.docs
     .map(doc => ({ id: doc.id, ...doc.data() }))
     .filter(req => {
         if (!user) return false;
         const request = req as TransportRequest;
         return !request.applicants?.includes(user.uid) && request.status === 'En attente';
-    });
+    }) || []) as TransportRequest[];
 
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-primary">Tableau de bord Transporteur</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Offres Disponibles</CardTitle>
-            <Truck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredRequests?.length || 0}</div>
-             <p className="text-xs text-muted-foreground">Demandes en attente de transporteurs</p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Missions en Cours</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{userData?.jobsInProgress || 0}</div>
-            <p className="text-xs text-muted-foreground">Voir dans <Link href="/dashboard/transporter/jobs" className="underline">Mes Courses</Link></p>
-          </CardContent>
-        </Card>
-         <Card className="shadow-md rounded-2xl border-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Note Moyenne</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-             <div className="text-2xl font-bold">{userData?.rating?.toFixed(1) || 'N/A'}</div>
-            <p className="text-xs text-muted-foreground">Basé sur les dernières courses terminées</p>
-          </CardContent>
-        </Card>
+    <div className="min-h-screen bg-slate-50">
+      <div className="px-6 lg:px-8 py-8 border-b border-slate-200 bg-white">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-teal-100 rounded-lg">
+            <Truck className="h-6 w-6 text-teal-700" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-slate-900">Demandes Disponibles</h1>
+            <p className="mt-2 text-slate-600 text-sm">Trouvez et postulez aux demandes de transport</p>
+          </div>
+        </div>
       </div>
 
-       <Card className="shadow-md rounded-2xl border-border">
-        <CardHeader>
-          <CardTitle className="text-lg text-accent">Nouvelles Demandes de Transport</CardTitle>
-          <CardDescription>
-            Voici les dernières demandes publiées par les clients. Postulez pour être sélectionné.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            {filteredRequests && filteredRequests.length > 0 ? (
-                filteredRequests.map(req => {
-                    const request = req as TransportRequest;
-                    const alreadyApplied = user && request.applicants?.includes(user.uid);
-                    return (
-                        <Card key={request.id} className="p-4 shadow-md rounded-2xl border-border">
-                            <div className="grid md:grid-cols-4 gap-4 items-center">
-                                <div className="md:col-span-3 space-y-2">
-                                    <CardTitle className="flex items-center gap-3 text-base">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">{getRequestIcon(request.nature)}</span>
-                                        {request.nature}
-                                    </CardTitle>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                                        <p className="flex items-center gap-1">
-                                            <MapPin size={14} /> {request.from} <ArrowRight size={14} className="mx-1" /> {request.to}
-                                        </p>
-                                        <p className="flex items-center gap-1"><Weight size={14} /> {request.weight} {request.weightUnit}</p>
-                                        <p className="flex items-center gap-1"><CalendarIcon size={14} /> {format(request.date.toDate(), "PPP")}</p>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                                        {request.distance && <p className="flex items-center gap-1"><Navigation size={14} /> {request.distance} km</p>}
-                                        {request.duration && <p className="flex items-center gap-1"><Clock size={14} /> {formatDurationFromSeconds(request.duration)}</p>}
-                                    </div>
-                                </div>
-                                <div className="md:col-span-1 flex justify-end">
-                                     <Button onClick={() => handleApply(request)} disabled={!!alreadyApplied}>
-                                        {alreadyApplied ? 'Déjà Postulé' : 'Postuler'}
-                                    </Button>
-                                </div>
-                            </div>
-                        </Card>
-                    )
-                })
+      <div className="px-6 lg:px-8 py-8">
+        {isLoading && (
+          <Card className="border-0 shadow-md rounded-xl bg-white">
+            <CardContent className="p-12 flex justify-center items-center">
+              <div className="text-center">
+                <Loader2 className="animate-spin h-8 w-8 text-teal-600 mx-auto" />
+                <p className="mt-4 text-slate-600">Chargement des demandes disponibles...</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {userData && userData.isVerified === false && !isLoading && (
+          <Card className="border-0 shadow-md rounded-xl bg-orange-50 border border-orange-200">
+            <CardContent className="p-6">
+              <div className="flex items-start gap-4">
+                <AlertTriangle className="h-6 w-6 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-orange-900">Profil en attente de vérification</h3>
+                  <p className="text-sm text-orange-800 mt-2">Votre compte doit être vérifié par un administrateur avant de pouvoir postuler à des demandes de transport.</p>
+                  <p className="text-sm text-orange-700 mt-3">Veuillez compléter tous les documents requis dans la section <Link href="/dashboard/transporter/documents" className="underline font-medium hover:text-orange-600">Mes documents</Link>.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && errorRequests && (
+          <Card className="border-0 shadow-md rounded-xl bg-red-50 border border-red-200">
+            <CardContent className="p-6">
+              <p className="text-red-700 font-medium">Erreur: Impossible de charger les demandes disponibles.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isLoading && !userData?.isVerified === false && (
+          <div className="space-y-6">
+            {filteredRequests && filteredRequests.length === 0 ? (
+              <Card className="border-0 shadow-md rounded-xl bg-white">
+                <CardContent className="p-12">
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center h-16 w-16 bg-slate-100 rounded-full mb-4">
+                      <Package className="h-8 w-8 text-slate-400" />
+                    </div>
+                    <p className="font-semibold text-slate-900">Aucune demande disponible pour le moment.</p>
+                    <p className="text-sm text-slate-600 mt-2">Revenez plus tard pour voir les nouvelles demandes de transport.</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
-                <p className="text-center text-muted-foreground py-10">Aucune demande disponible pour le moment.</p>
+              <div className="grid gap-4">
+                {filteredRequests?.map((request: TransportRequest) => (
+                  <Card key={request.id} className="border-0 shadow-md rounded-xl bg-white overflow-hidden hover:shadow-lg transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex gap-4 flex-1">
+                          <div className="p-3 bg-teal-100 rounded-lg h-fit">
+                            {getRequestIcon(request.nature)}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h3 className="font-semibold text-slate-900 text-lg">{request.nature}</h3>
+                                <p className="text-sm text-slate-600 mt-1">ID: {request.id}</p>
+                              </div>
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                En attente
+                              </span>
+                            </div>
+                            
+                            <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Départ</p>
+                                <p className="text-sm text-slate-900 mt-1">{request.from}</p>
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Destination</p>
+                                <p className="text-sm text-slate-900 mt-1">{request.to}</p>
+                              </div>
+                            </div>
+
+                            <div className="grid sm:grid-cols-3 gap-4 mt-4">
+                              {request.weight && (
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Poids</p>
+                                  <p className="text-sm text-slate-900 mt-1 flex items-center gap-1">
+                                    <Weight className="h-4 w-4" /> {request.weight} kg
+                                  </p>
+                                </div>
+                              )}
+                              {request.estimatedDistance && (
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Distance</p>
+                                  <p className="text-sm text-slate-900 mt-1 flex items-center gap-1">
+                                    <Navigation className="h-4 w-4" /> ~{request.estimatedDistance} km
+                                  </p>
+                                </div>
+                              )}
+                              {request.estimatedDuration && (
+                                <div>
+                                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Durée estimée</p>
+                                  <p className="text-sm text-slate-900 mt-1 flex items-center gap-1">
+                                    <Clock className="h-4 w-4" /> {formatDurationFromSeconds(request.estimatedDuration)}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            {request.estimatedPrice && (
+                              <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex items-center justify-between">
+                                  <p className="text-sm text-green-700">Prix estimé</p>
+                                  <p className="text-lg font-bold text-green-700">
+                                    {new Intl.NumberFormat('fr-GN', { style: 'currency', currency: 'GNF' }).format(request.estimatedPrice)}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200">
+                              <User className="h-4 w-4 text-slate-400" />
+                              <p className="text-sm text-slate-600">Client: <span className="font-medium text-slate-900">{request.clientName || 'N/A'}</span></p>
+                            </div>
+                          </div>
+                        </div>
+                        <Button 
+                          onClick={() => handleApply(request)}
+                          className="bg-teal-600 hover:bg-teal-700 text-white whitespace-nowrap"
+                          disabled={isLoading}
+                        >
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                          Postuler
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
-        </CardContent>
-      </Card>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

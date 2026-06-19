@@ -101,7 +101,7 @@ export default function FleetPage() {
     const vehiclesQuery = userData?.companyId ? query(collection(db, 'users', userData.companyId, 'vehicles')) : null;
     const [vehiclesSnapshot, loading, error] = useCollection(vehiclesQuery);
 
-    const vehicles = vehiclesSnapshot?.docs.map(doc => ({ id: doc.id, ...doc.data() })) || [];
+    const vehicles = vehiclesSnapshot?.docs.map(doc => ({ id: doc.id, ...doc.data() } as any)) || [];
 
     const handleRemoveVehicle = async (vehicleId: string) => {
         if (!userData?.companyId) return;
