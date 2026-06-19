@@ -105,6 +105,5 @@ export interface TransportRequest {
   cancellationDocumentUrl?: string;
   previousStatus?: 'En attente' | 'En cours';
   estimatedDistance?: number;
-  estimatedDistance?: number;
   estimatedDuration?: number;
 }
