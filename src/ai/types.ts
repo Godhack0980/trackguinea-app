@@ -106,4 +106,5 @@ export interface TransportRequest {
   previousStatus?: 'En attente' | 'En cours';
   estimatedDistance?: number;
   estimatedDuration?: number;
+  estimatedPrice?: number;
 }
