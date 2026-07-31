@@ -1,0 +1,17 @@
+{
+  "invoices_title": "账务与运输开销",
+  "invoices_subtitle": "在线打印规范的物流运输发票，统计卡车出车成本，精确测算公司净利率。",
+  "invoices_rev": "累计营业额",
+  "invoices_exp": "跑车变动成本支出",
+  "invoices_net": "车队净利润",
+  "invoices_margin": "车队息税前利润率",
+  "invoices_log_cost": "登记卡车出车费用",
+  "invoices_fuel": "加油费/柴油费用 (GNF)",
+  "invoices_tolls": "长途路桥费及过路费 (GNF)",
+  "invoices_allowance": "司机出车差旅补助 (GNF)",
+  "invoices_other": "其他意外开销 (GNF)",
+  "invoices_save_cost": "保存开销项",
+  "invoices_auto": "运单自动结算与电子合同",
+  "invoices_auto_desc": "系统汇总已完工的运输单，自动生成符合几内亚税务规定的正式运单发票。",
+  "invoices_print_btn": "导出 PDF / 打印发票"
+}

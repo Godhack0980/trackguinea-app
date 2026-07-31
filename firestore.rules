@@ -12,6 +12,11 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
+    function isAdmin() {
+      return isUserAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     function isTransporterAssigned(resource) {
         return isUserAuthenticated() && request.auth.uid == resource.data.assignedTo;
     }
@@ -20,31 +25,89 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applicants']);
     }
 
+    function isCompanyMember(companyId) {
+      return isUserAuthenticated() && (
+        isOwner(companyId) || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId
+      );
+    }
+
+    // Allow collectionGroup query for vehicles (needed for public galleries)
+    match /{path=**}/vehicles/{vehicleId} {
+      allow read: if true;
+    }
+
     match /users/{userId} {
-      allow read: if isUserAuthenticated();
+      allow read: if true;
       allow create: if isUserAuthenticated();
-      allow update: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+
+      match /vehicles/{vehicleId} {
+        allow read: if true;
+        allow write: if isCompanyMember(userId);
+      }
     }
     
     match /requests/{requestId} {
-      allow read: if isUserAuthenticated();
+      allow read: if true;
       allow create: if isUserAuthenticated() && isOwner(request.resource.data.clientId);
       allow update: if 
           // Rule 1: The client who owns the request can update it
-          isOwner(request.resource.data.clientId) || 
+          isOwner(resource.data.clientId) || 
           
           // Rule 2: The assigned transporter can ONLY update the 'status' field
-          (isTransporterAssigned(get(/databases/$(database)/documents/requests/$(requestId))) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
+          (isTransporterAssigned(resource) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])) ||
 
           // Rule 3: Any authenticated user (a transporter) can apply, which only modifies the 'applicants' array
-          (isUserAuthenticated() && isApplying());
+          (isUserAuthenticated() && isApplying()) ||
 
-      allow delete: if false; // Deletes should be handled by status changes
+          // Rule 4: Admin can update requests
+          isAdmin();
+
+      allow delete: if isAdmin();
     }
 
     match /notifications/{notificationId} {
-      allow read, update: if isUserAuthenticated() && isOwner(resource.data.userId);
-      allow create: if isUserAuthenticated();
+      // Allow any user (including anonymous) to create notifications
+      allow create: if true;
+      // Only the owner or admin can read/update notifications
+      allow read, update: if isUserAuthenticated() && (
+        isOwner(resource.data.userId) || isAdmin()
+      );
+      allow delete: if isUserAuthenticated() && (
+        isOwner(resource.data.userId) || isAdmin()
+      );
+    }
+
+    match /shipments/{shipmentId} {
+      allow read: if true;
+      allow write: if isUserAuthenticated();
+    }
+
+    // Drafts & Contracts
+    match /drafts/{draftId} {
+      allow read, write: if isUserAuthenticated();
+    }
+
+    // Chat conversations
+    match /conversations/{conversationId} {
+      allow read, write: if true;
+
+      match /messages/{messageId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /invoices/{invoiceId} {
+      allow read, write: if isUserAuthenticated();
+    }
+
+    match /withdrawals/{withdrawalId} {
+      allow read, write: if isUserAuthenticated();
+    }
+
+    match /transactions/{transactionId} {
+      allow read, write: if isUserAuthenticated();
     }
   }
 }

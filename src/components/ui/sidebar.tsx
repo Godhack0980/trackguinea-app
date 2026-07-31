@@ -5,7 +5,7 @@ import * as React from "react"
 import Link from "next/link"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { Menu } from "lucide-react"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -280,7 +280,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <PanelLeft />
+      <Menu />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -558,7 +558,14 @@ const SidebarMenuButton = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state } = useSidebar()
+    const { isMobile, state, setOpenMobile } = useSidebar()
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (isMobile) {
+        setOpenMobile(false)
+      }
+      props.onClick?.(e)
+    }
 
     const buttonContent = (
       <button
@@ -568,12 +575,24 @@ const SidebarMenuButton = React.forwardRef<
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
+        onClick={handleClick}
       >
         {children}
       </button>
     )
 
-    const button = href ? <Link href={href}>{buttonContent}</Link> : buttonContent;
+    const button = href ? (
+      <Link 
+        href={href} 
+        onClick={() => {
+          if (isMobile) {
+            setOpenMobile(false)
+          }
+        }}
+      >
+        {buttonContent}
+      </Link>
+    ) : buttonContent;
     
     if (!tooltip) {
       return button

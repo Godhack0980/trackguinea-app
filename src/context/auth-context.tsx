@@ -1,10 +1,10 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, onSnapshot, DocumentData } from 'firebase/firestore';
+import { doc, getDoc, DocumentData } from 'firebase/firestore';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 interface AppUser extends FirebaseUser {
@@ -12,14 +12,16 @@ interface AppUser extends FirebaseUser {
     lastName?: string;
     role?: string;
     isAdmin?: boolean;
-    [key: string]: any; 
+    [key: string]: any;
 }
 
 interface AuthContextType {
   user: AppUser | null;
   userData: DocumentData | null;
-  loadingAuth: boolean; // True while firebase auth is resolving, then false.
-  loadingUser: boolean; // True until user data from firestore is fetched.
+  loadingAuth: boolean;
+  loadingUser: boolean;
+  /** Call this to manually re-fetch the user's Firestore profile (e.g. after a profile update). */
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,46 +31,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<DocumentData | null>(null);
   const [userLoading, setUserLoading] = useState(true);
 
+  // One-time fetch — avoids all onSnapshot WebSocket listener teardown races
+  // (Firestore SDK 11.x assertion failures: ID ca9 / b815).
+  const fetchUserData = useCallback(async (uid: string) => {
+    setUserLoading(true);
+    try {
+      const docSnap = await getDoc(doc(db, 'users', uid));
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      } else {
+        setUserData(null);
+        console.warn(`User with UID ${uid} not found in Firestore.`);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      setUserData(null);
+    } finally {
+      setUserLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    // If authUser is null (logged out) or still loading, reset state.
+    if (authLoading) return; // Wait until Firebase Auth has resolved
+
     if (!authUser) {
+      // Logged out — clear state immediately, no Firestore call needed
       setUserData(null);
       setUserLoading(false);
       return;
     }
 
-    // If authUser is available, fetch user data from Firestore.
-    setUserLoading(true);
-    const userDocRef = doc(db, 'users', authUser.uid);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-      if (docSnap.exists()) {
-        setUserData(docSnap.data());
-      } else {
-        setUserData(null); // User in Auth but not in Firestore
-        console.warn(`User with UID ${authUser.uid} not found in Firestore.`);
-      }
-      setUserLoading(false);
-    }, (error) => {
-      console.error("Error fetching user data:", error);
-      setUserData(null);
-      setUserLoading(false);
-    });
+    fetchUserData(authUser.uid);
+    // No cleanup needed — getDoc returns a Promise, not a listener.
+  }, [authUser, authLoading, fetchUserData]);
 
-    // Cleanup listener on unmount
-    return () => unsubscribe();
-  }, [authUser]);
+  // Expose refreshUserData so pages can re-fetch after profile edits
+  const refreshUserData = useCallback(async () => {
+    if (authUser) await fetchUserData(authUser.uid);
+  }, [authUser, fetchUserData]);
 
-  // Combine authUser and userData into a single user object.
-  const user: AppUser | null = authUser ? {
-    ...authUser,
-    ...userData
-  } : null;
+  const user: AppUser | null = authUser
+    ? { ...authUser, ...userData }
+    : null;
 
   const value: AuthContextType = {
     user,
     userData,
     loadingAuth: authLoading,
     loadingUser: userLoading,
+    refreshUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

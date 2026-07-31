@@ -1,0 +1,10 @@
+{
+  "chat_title": "مراسلة الدعم",
+  "chat_subtitle": "تحدث مباشرة مع مستشاري الدعم الفني في TransConnekt.",
+  "chat_support_title": "دعم TransConnekt",
+  "chat_support_subtitle": "مستشارو الدعم الفني واللوجستي",
+  "chat_auto_welcome": "مرحباً! شكراً لاتصالك بنا. سيرد عليك فريق TransConnekt في أقرب وقت ممكن. في هذه الأثناء، يمكنك مراجعة الأسئلة الشائعة أو الاتصال بنا.",
+  "chat_placeholder": "اكتب رسالة دعم...",
+  "chat_send_btn": "إرسال",
+  "chat_status_online": "الدعم متصل"
+}

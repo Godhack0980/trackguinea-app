@@ -1,0 +1,13 @@
+{
+  "customs_title": "Zollverwaltung",
+  "customs_subtitle": "Vorverzollung von Waren, Erfassung von Zollanmeldungen (DAU) und Schnittstelle zu SYDONIA.",
+  "customs_new_dec": "Neue Erklärung",
+  "customs_cargo_desc": "Beschreibung der Waren",
+  "customs_origin": "Herkunftsland",
+  "customs_broker": "Zolldeklarant",
+  "customs_dau_file": "Zoll-Dokument (PDF / Bild)",
+  "customs_submit_dec": "Beim Zoll deklarieren",
+  "customs_active_dec": "Aktive Erklärungen & SYDONIA-Rückmeldungen",
+  "customs_active_desc": "Liste Ihrer Zollanmeldungen und zugewiesenen Kanäle.",
+  "customs_sydonia_btn": "An SYDONIA senden"
+}

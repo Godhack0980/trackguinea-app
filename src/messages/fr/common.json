@@ -1,0 +1,15 @@
+{
+  "allRead": "Tout lire",
+  "save": "Enregistrer",
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "actions": "Actions",
+  "status": "Statut",
+  "active": "Actif",
+  "suspended": "Suspendu",
+  "available": "Disponible",
+  "onMission": "En Mission",
+  "alertExpired": "EXPIRÉ 🚫",
+  "alertExpiringSoon": "Expirant bientôt ⚠️",
+  "hello": "Bonjour,"
+}

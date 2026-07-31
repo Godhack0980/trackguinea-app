@@ -1,0 +1,10 @@
+{
+  "chat_title": "Support Messaging",
+  "chat_subtitle": "Chat live with TransConnekt support advisors.",
+  "chat_support_title": "TransConnekt Support",
+  "chat_support_subtitle": "Technical & logistics support advisors",
+  "chat_auto_welcome": "Hello! Thank you for contacting us. Our TransConnekt team will answer you shortly.",
+  "chat_placeholder": "Write a support message...",
+  "chat_send_btn": "Send",
+  "chat_status_online": "Support Online"
+}

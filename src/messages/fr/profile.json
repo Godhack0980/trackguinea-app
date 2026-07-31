@@ -1,0 +1,13 @@
+{
+  "profile_title": "Mon profil & Paramètres",
+  "profile_subtitle": "Gérez vos informations de compte, de contact et préférences de sécurité.",
+  "profile_company_details": "Détails de l'entreprise",
+  "profile_user_details": "Informations personnelles",
+  "profile_company_name": "Nom de l'entreprise",
+  "profile_first_name": "Prénom",
+  "profile_last_name": "Nom de famille",
+  "profile_email": "Adresse e-mail",
+  "profile_phone": "Numéro de téléphone",
+  "profile_role": "Rôle sur la plateforme",
+  "profile_save_success": "Profil mis à jour avec succès !"
+}

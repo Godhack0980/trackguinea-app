@@ -1,0 +1,16 @@
+{
+  "fleet_title": "车队车辆管理",
+  "fleet_subtitle": "录入您名下的卡车，维护轮胎尺寸、百公里油耗并管理出警频率。",
+  "fleet_add_btn": "录入新卡车",
+  "fleet_insurance_expiry": "保险到期日期",
+  "fleet_tech_expiry": "工程营运年检到期日",
+  "fleet_odometer": "仪表盘总里程数 (Odometer 公里)",
+  "fleet_consumption": "额定百公里油耗 (L/100km)",
+  "fleet_add_maintenance": "登记卡车维修/机油保养项目",
+  "fleet_maint_type": "维修保养类别",
+  "fleet_maint_desc": "更换配件与具体修缮内容描述",
+  "fleet_maint_cost": "本次保养花销金额 (GNF)",
+  "fleet_maint_history": "卡车历史保养记录单",
+  "fleet_no_maint": "该卡车暂无保养信息。",
+  "fleet_no_vehicles": "尚未录入卡车"
+}

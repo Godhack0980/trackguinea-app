@@ -1,0 +1,17 @@
+{
+  "invoices_title": "Rechnungen & Kosten",
+  "invoices_subtitle": "Erstellen Sie professionelle Rechnungen, erfassen Sie Betriebskosten und optimieren Sie Ihre Nettomargen.",
+  "invoices_rev": "Umsatz",
+  "invoices_exp": "Erfasste Ausgaben",
+  "invoices_net": "Nettogewinn",
+  "invoices_margin": "Betriebsmarge",
+  "invoices_log_cost": "Missionskosten erfassen",
+  "invoices_fuel": "Diesel / Kraftstoff (GNF)",
+  "invoices_tolls": "Maut- & Straßengebühren (GNF)",
+  "invoices_allowance": "Fahrerdiäten (GNF)",
+  "invoices_other": "Sonstige Kosten (GNF)",
+  "invoices_save_cost": "Ausgabe erfassen",
+  "invoices_auto": "Automatische Rechnungsstellung & Angebote",
+  "invoices_auto_desc": "Sehen Sie abgeschlossene Fahrten ein und erstellen Sie konforme Rechnungen für Ihre Kunden.",
+  "invoices_print_btn": "Drucken / PDF"
+}

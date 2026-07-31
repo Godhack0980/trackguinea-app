@@ -1,0 +1,13 @@
+{
+  "customs_title": "إدارة الجمارك",
+  "customs_subtitle": "التخليص المسبق للبضائع، تسجيل DAU وبوابة SYDONIA.",
+  "customs_new_dec": "تصريح جديد",
+  "customs_cargo_desc": "وصف البضائع",
+  "customs_origin": "بلد المنشأ",
+  "customs_broker": "المخلص الجمركي",
+  "customs_dau_file": "ملف DAU (PDF / صورة)",
+  "customs_submit_dec": "التصريح للجمارك",
+  "customs_active_dec": "التصريحات النشطة واستجابات SYDONIA",
+  "customs_active_desc": "قائمة الإقرارات الجمركية وحالة قنوات المرور المخصصة.",
+  "customs_sydonia_btn": "إرسال إلى SYDONIA"
+}

@@ -1,0 +1,8 @@
+{
+  "notif_title": "Historial de Notificaciones",
+  "notif_subtitle": "Consulte el historial completo de sus alertas y notificaciones de logística.",
+  "notif_empty": "No hay notificaciones por el momento.",
+  "notif_read_all": "Marcar todo como leído",
+  "notif_clear": "Borrar historial",
+  "notif_view_all": "Ver todo"
+}

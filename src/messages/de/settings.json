@@ -1,0 +1,12 @@
+{
+  "security_title": "Sicherheit & Audit",
+  "security_subtitle": "Einhaltungsprüfungen der Besatzungen, Ausschlusslisten und Protokollierung sensibler Operationen.",
+  "security_driver_status": "Konformitätsstatus der Fahrer",
+  "security_driver_desc": "Verwalten Sie den Zugriff auf Fracht und überprüfen Sie den behördlichen Status der Besatzungen.",
+  "security_audit_log": "Sicherheits-Audit-Register",
+  "security_audit_desc": "Unveränderliche Protokolle über Zugriffsaktivitäten.",
+  "security_actor": "Akteur",
+  "security_action": "Aktion",
+  "security_ip": "IP-Adresse",
+  "security_immutable": "Alle Protokolle sind verschlüsselt und werden unveränderlich gespeichert."
+}

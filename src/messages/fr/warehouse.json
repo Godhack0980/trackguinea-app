@@ -1,0 +1,13 @@
+{
+  "customs_title": "Gestion des Douanes",
+  "customs_subtitle": "Pré-dédouanement des marchandises, enregistrement DAU et passerelle SYDONIA.",
+  "customs_new_dec": "Nouvelle Déclaration",
+  "customs_cargo_desc": "Description des marchandises",
+  "customs_origin": "Pays de provenance",
+  "customs_broker": "Déclarant en douane",
+  "customs_dau_file": "Fichier DAU (PDF / Image)",
+  "customs_submit_dec": "Déclarer en Douane",
+  "customs_active_dec": "Déclarations Actives & Retours SYDONIA",
+  "customs_active_desc": "Liste de vos déclarations douanières et état d'attribution des canaux de passage.",
+  "customs_sydonia_btn": "Soumettre à SYDONIA"
+}

@@ -1,0 +1,15 @@
+{
+  "allRead": "تحديد الكل كمقروء",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "delete": "حذف",
+  "actions": "الإجراءات",
+  "status": "الحالة",
+  "active": "نشط",
+  "suspended": "معلق",
+  "available": "متاح",
+  "onMission": "في مهمة",
+  "alertExpired": "منتهي 🚫",
+  "alertExpiringSoon": "ينتهي قريباً ⚠️",
+  "hello": "مرحباً،"
+}

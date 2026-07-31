@@ -1,0 +1,16 @@
+{
+  "fleet_title": "Gestion de la Flotte",
+  "fleet_subtitle": "Supervisez et gérez les spécifications, photos et la disponibilité de vos camions.",
+  "fleet_add_btn": "Ajouter un Véhicule",
+  "fleet_insurance_expiry": "Expiration Assurance",
+  "fleet_tech_expiry": "Expiration Visite Technique",
+  "fleet_odometer": "Kilométrage Actuel (Odomètre km)",
+  "fleet_consumption": "Consommation Moyenne (L/100km)",
+  "fleet_add_maintenance": "Ajouter un enregistrement d'entretien",
+  "fleet_maint_type": "Type d'intervention",
+  "fleet_maint_desc": "Description",
+  "fleet_maint_cost": "Coût de l'intervention (GNF)",
+  "fleet_maint_history": "Historique de maintenance",
+  "fleet_no_maint": "Aucun entretien enregistré.",
+  "fleet_no_vehicles": "Aucun véhicule enregistré"
+}

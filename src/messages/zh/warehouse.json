@@ -1,0 +1,13 @@
+{
+  "customs_title": "海关监管与保税申报",
+  "customs_subtitle": "货物出港预报关，录入DAU海关单证，并直连几内亚 SYDONIA 报关系统。",
+  "customs_new_dec": "新建报关单",
+  "customs_cargo_desc": "进出口货物详细描述",
+  "customs_origin": "货物出发国",
+  "customs_broker": "指定代理报关员",
+  "customs_dau_file": "上传 DAU 扫描件 (PDF / 图片格式)",
+  "customs_submit_dec": "立即向海关申报",
+  "customs_active_dec": "实时报关记录与 SYDONIA 系统通道反馈",
+  "customs_active_desc": "查看您报关货物的通关状态，以及分配的红黄绿海关查验通道。",
+  "customs_sydonia_btn": "上传数据到 SYDONIA"
+}

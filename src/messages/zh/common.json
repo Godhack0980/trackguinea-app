@@ -1,0 +1,15 @@
+{
+  "allRead": "全部标记为已读",
+  "save": "保存",
+  "cancel": "取消",
+  "delete": "删除",
+  "actions": "操作",
+  "status": "状态",
+  "active": "活跃",
+  "suspended": "已暂停",
+  "available": "空闲",
+  "onMission": "执行任务中",
+  "alertExpired": "已过期 🚫",
+  "alertExpiringSoon": "即将过期 ⚠️",
+  "hello": "您好，"
+}

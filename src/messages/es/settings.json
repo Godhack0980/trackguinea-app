@@ -1,0 +1,12 @@
+{
+  "security_title": "Seguridad y Auditoría",
+  "security_subtitle": "Control de cumplimiento, listas de exclusión y registros sensibles.",
+  "security_driver_status": "Cumplimiento del Conductor",
+  "security_driver_desc": "Examine el estatus administrativo de las tripulaciones.",
+  "security_audit_log": "Registro de Auditoría",
+  "security_audit_desc": "Logs inmutables de actividades de control de acceso.",
+  "security_actor": "Actor",
+  "security_action": "Acción",
+  "security_ip": "Dirección IP",
+  "security_immutable": "Todos los logs están encriptados y almacenados de forma inmutable."
+}

@@ -1,0 +1,13 @@
+{
+  "profile_title": "My Profile & Settings",
+  "profile_subtitle": "Manage your account, contact details, and security preferences.",
+  "profile_company_details": "Company details",
+  "profile_user_details": "Personal information",
+  "profile_company_name": "Company Name",
+  "profile_first_name": "First Name",
+  "profile_last_name": "Last Name",
+  "profile_email": "Email Address",
+  "profile_phone": "Phone Number",
+  "profile_role": "Platform Role",
+  "profile_save_success": "Profile updated successfully!"
+}

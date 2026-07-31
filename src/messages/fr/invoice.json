@@ -1,0 +1,17 @@
+{
+  "invoices_title": "Facturation & Coûts",
+  "invoices_subtitle": "Générez des factures professionnelles, comptabilisez vos frais opérationnels et optimisez vos marges nettes.",
+  "invoices_rev": "Chiffre d'Affaires",
+  "invoices_exp": "Dépenses Enregistrées",
+  "invoices_net": "Bénéfice Net",
+  "invoices_margin": "Marge Opérationnelle",
+  "invoices_log_cost": "Enregistrer des Frais de Mission",
+  "invoices_fuel": "Gazole / Carburant (GNF)",
+  "invoices_tolls": "Frais de péage & Route (GNF)",
+  "invoices_allowance": "Indemnité Chauffeur (GNF)",
+  "invoices_other": "Frais Divers (GNF)",
+  "invoices_save_cost": "Enregistrer la dépense",
+  "invoices_auto": "Facturation Automatique & Devis",
+  "invoices_auto_desc": "Visualisez les courses terminées et éditez les factures conformes pour vos clients.",
+  "invoices_print_btn": "Imprimer / PDF"
+}

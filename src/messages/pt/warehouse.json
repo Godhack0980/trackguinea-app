@@ -1,0 +1,13 @@
+{
+  "customs_title": "Gestão de Alfândegas",
+  "customs_subtitle": "Desembaraço aduaneiro, registro DAU e canal de passagem SYDONIA.",
+  "customs_new_dec": "Nova Declaração",
+  "customs_cargo_desc": "Descrição das mercadorias",
+  "customs_origin": "País de origem",
+  "customs_broker": "Despachante aduaneiro",
+  "customs_dau_file": "Arquivo DAU (PDF / Imagem)",
+  "customs_submit_dec": "Declarar na Alfândega",
+  "customs_active_dec": "Declarações Ativas e Retornos SYDONIA",
+  "customs_active_desc": "Lista de declarações e status dos canais aduaneiros.",
+  "customs_sydonia_btn": "Enviar para SYDONIA"
+}

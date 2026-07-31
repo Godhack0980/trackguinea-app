@@ -1,0 +1,16 @@
+{
+  "fleet_title": "Fleet Management",
+  "fleet_subtitle": "Supervise and manage the specifications, photos and availability of your trucks.",
+  "fleet_add_btn": "Add Vehicle",
+  "fleet_insurance_expiry": "Insurance Expiry",
+  "fleet_tech_expiry": "Technical Visit Expiry",
+  "fleet_odometer": "Current Mileage (Odometer km)",
+  "fleet_consumption": "Average Consumption (L/100km)",
+  "fleet_add_maintenance": "Add maintenance record",
+  "fleet_maint_type": "Intervention Type",
+  "fleet_maint_desc": "Description",
+  "fleet_maint_cost": "Intervention Cost (GNF)",
+  "fleet_maint_history": "Maintenance History",
+  "fleet_no_maint": "No maintenance recorded.",
+  "fleet_no_vehicles": "No vehicle registered"
+}

@@ -1,0 +1,12 @@
+{
+  "security_title": "安全与审计日志",
+  "security_subtitle": "司机资质合规抽检、行业拉黑人员名单以及核心资金变动操作审计日志。",
+  "security_driver_status": "司机运营合规资质状态",
+  "security_driver_desc": "管理司机派单许可，一键封禁违规拉私活或常有货损的司机。",
+  "security_audit_log": "系统核心审计日志",
+  "security_audit_desc": "包含用户IP、操作时间的防篡改区块链审计痕迹。",
+  "security_actor": "操作人",
+  "security_action": "执行命令",
+  "security_ip": "来访IP地址",
+  "security_immutable": "所有审计数据均通过哈希加密存储在不可篡改的服务器数据库中。"
+}

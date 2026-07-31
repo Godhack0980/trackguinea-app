@@ -1,0 +1,8 @@
+{
+  "notif_title": "通知公告历史记录",
+  "notif_subtitle": "系统公告、大额资金解冻通知及订单被抢公告的历史汇总记录。",
+  "notif_empty": "暂无系统通知。",
+  "notif_read_all": "全部标记为已读",
+  "notif_clear": "一键清空通知历史",
+  "notif_view_all": "查看全部"
+}

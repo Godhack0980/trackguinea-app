@@ -1,0 +1,12 @@
+{
+  "security_title": "الأمن والتدقيق",
+  "security_subtitle": "مراقبة الامتثال، قوائم الاستبعاد وتتبع العمليات الحساسة.",
+  "security_driver_status": "حالة امتثال السائقين",
+  "security_driver_desc": "إدارة الوصول إلى الشحنات وفحص الحالة الإدارية.",
+  "security_audit_log": "سجل تدقيق الأمان",
+  "security_audit_desc": "سجلات أنشطة غير قابلة للتغيير متعلقة بالتحكم في الوصول.",
+  "security_actor": "الفاعل",
+  "security_action": "الإجراء",
+  "security_ip": "عنوان IP",
+  "security_immutable": "جميع السجلات مشفرة ومخزنة بشكل غير قابل للتعديل."
+}

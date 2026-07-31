@@ -1,0 +1,13 @@
+{
+  "customs_title": "Customs Management",
+  "customs_subtitle": "Pre-clearance of goods, DAU registration and SYDONIA gateway.",
+  "customs_new_dec": "New Declaration",
+  "customs_cargo_desc": "Cargo description",
+  "customs_origin": "Origin Country",
+  "customs_broker": "Customs Broker",
+  "customs_dau_file": "DAU File (PDF / Image)",
+  "customs_submit_dec": "Declare to Customs",
+  "customs_active_dec": "Active Declarations & SYDONIA Returns",
+  "customs_active_desc": "List of your customs declarations and status of passage channels.",
+  "customs_sydonia_btn": "Submit to SYDONIA"
+}

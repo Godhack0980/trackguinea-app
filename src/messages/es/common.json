@@ -1,0 +1,15 @@
+{
+  "allRead": "Marcar todo como leído",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "delete": "Eliminar",
+  "actions": "Acciones",
+  "status": "Estado",
+  "active": "Activo",
+  "suspended": "Suspendido",
+  "available": "Disponible",
+  "onMission": "En misión",
+  "alertExpired": "EXPIRADO 🚫",
+  "alertExpiringSoon": "Expira pronto ⚠️",
+  "hello": "Hola,"
+}

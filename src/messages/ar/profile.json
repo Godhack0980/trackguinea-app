@@ -1,0 +1,13 @@
+{
+  "profile_title": "ملفي الشخصي والإعدادات",
+  "profile_subtitle": "إدارة معلومات الحساب وتفضيلات الأمان.",
+  "profile_company_details": "تفاصيل الشركة",
+  "profile_user_details": "المعلومات الشخصية",
+  "profile_company_name": "اسم الشركة",
+  "profile_first_name": "الاسم الأول",
+  "profile_last_name": "اسم العائلة",
+  "profile_email": "البريد الإلكتروني",
+  "profile_phone": "رقم الهاتف",
+  "profile_role": "الدور في المنصة",
+  "profile_save_success": "تم تحديث الملف الشخصي بنجاح!"
+}

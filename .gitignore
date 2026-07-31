@@ -43,3 +43,16 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+node_modules/
+.next/
+.firebase/
+.pureftpd-upload*
+*.zip
+deploy.log
+
+.env.local
+.env.production
+.env
+
+backups/

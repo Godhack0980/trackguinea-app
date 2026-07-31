@@ -15,9 +15,10 @@ import { db } from "@/lib/firebase"
 import { Badge } from "./ui/badge"
 import Link from "next/link"
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from "date-fns/locale"
+import { fr, enUS } from "date-fns/locale"
 import { PopoverClose } from "@radix-ui/react-popover"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
+import { useTranslation, translateNotificationMessage } from "@/lib/translations"
 
 
 interface Notification {
@@ -30,10 +31,13 @@ interface Notification {
 
 export default function Notifications() {
     const { user } = useAuth();
+    const { t, lang } = useTranslation();
     
-    const notificationsQuery = user 
-        ? query(collection(db, 'notifications'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'))
-        : null;
+    const notificationsQuery = useMemo(() => {
+        return user 
+            ? query(collection(db, 'notifications'), where('userId', '==', user.uid))
+            : null;
+    }, [user?.uid]);
 
     const [snapshot, loading] = useCollection(notificationsQuery);
     
@@ -42,7 +46,13 @@ export default function Notifications() {
 
     useEffect(() => {
         if (snapshot) {
-            const serverNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+            const serverNotifications = snapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() } as Notification))
+                .sort((a, b) => {
+                    const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+                    const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+                    return timeB - timeA;
+                });
             setOptimisticNotifications(serverNotifications);
         }
     }, [snapshot]);
@@ -69,6 +79,29 @@ export default function Notifications() {
             );
         }
     }
+
+    const handleMarkAllAsRead = async () => {
+        if (!user || unreadCount === 0) return;
+
+        // Optimistically update all in UI
+        setOptimisticNotifications(prev =>
+            prev.map(n => ({ ...n, isRead: true }))
+        );
+
+        // Update in Firestore
+        try {
+            const promises = optimisticNotifications
+                .filter(n => !n.isRead)
+                .map(n => updateDoc(doc(db, 'notifications', n.id), { isRead: true }));
+            await Promise.all(promises);
+        } catch (error) {
+            console.error("Failed to mark all as read:", error);
+            if (snapshot) {
+                const serverNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Notification));
+                setOptimisticNotifications(serverNotifications);
+            }
+        }
+    };
     
     return (
         <Popover>
@@ -84,7 +117,25 @@ export default function Notifications() {
                 <div className="grid gap-4">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                            <h4 className="font-medium leading-none">Notifications</h4>
+                            <h4 className="font-medium leading-none">{t.notifications}</h4>
+                            <div className="flex items-center gap-1.5">
+                                {unreadCount > 0 && (
+                                    <>
+                                        <button 
+                                            onClick={handleMarkAllAsRead} 
+                                            className="text-[10px] text-muted-foreground hover:text-foreground font-bold transition-colors"
+                                        >
+                                            {t.allRead}
+                                        </button>
+                                        <span className="text-muted-foreground/30 text-[10px] select-none">|</span>
+                                    </>
+                                )}
+                                <PopoverClose asChild>
+                                  <Link href="/dashboard/notifications" className="text-xs text-primary hover:underline font-medium">
+                                    {t.notif_view_all || (lang === "ar" ? "عرض الكل" : lang === "fr" ? "Voir tout" : "View all")}
+                                  </Link>
+                                </PopoverClose>
+                            </div>
                         </div>
                     </div>
                     <div className="grid gap-2 max-h-96 overflow-y-auto">
@@ -93,7 +144,7 @@ export default function Notifications() {
                             <Loader2 className="animate-spin" />
                          </div>
                        ) : optimisticNotifications.length > 0 ? (
-                            optimisticNotifications.map(notif => (
+                            optimisticNotifications.slice(0, 10).map(notif => (
                                 <PopoverClose asChild key={notif.id}>
                                     <Link
                                         href={notif.href}
@@ -102,18 +153,28 @@ export default function Notifications() {
                                         
                                         {!notif.isRead && <span className="flex h-2 w-2 mt-1.5 shrink-0 rounded-full bg-sky-500" />}
                                         <div className="grid gap-1 flex-1">
-                                            <p className={`text-sm ${!notif.isRead ? 'font-semibold' : ''}`}>{notif.message}</p>
+                                            <p className={`text-sm ${!notif.isRead ? 'font-semibold' : ''}`}>{translateNotificationMessage(notif.message, lang)}</p>
                                             <p className="text-xs text-muted-foreground">
-                                                {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true, locale: fr }) : ''}
+                                                {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true, locale: lang === 'fr' ? fr : enUS }) : ''}
                                             </p>
                                         </div>
                                     </Link>
                                 </PopoverClose>
                             ))
                        ) : (
-                         <p className="text-sm text-center text-muted-foreground p-4">Aucune nouvelle notification.</p>
+                         <p className="text-sm text-center text-muted-foreground p-4">{lang === 'fr' ? "Aucune nouvelle notification." : "No new notifications."}</p>
                        )}
                     </div>
+                    {optimisticNotifications.length > 10 && (
+                      <PopoverClose asChild>
+                        <Link href="/dashboard/notifications" className="text-xs text-center text-primary hover:underline font-medium py-1">
+                          {lang === 'fr' 
+                            ? `Voir ${optimisticNotifications.length - 10} notification${optimisticNotifications.length - 10 > 1 ? 's' : ''} supplémentaire${optimisticNotifications.length - 10 > 1 ? 's' : ''}...`
+                            : `View ${optimisticNotifications.length - 10} more notification${optimisticNotifications.length - 10 > 1 ? 's' : ''}...`
+                          }
+                        </Link>
+                      </PopoverClose>
+                    )}
                 </div>
             </PopoverContent>
         </Popover>

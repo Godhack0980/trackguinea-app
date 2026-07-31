@@ -104,7 +104,12 @@ export interface TransportRequest {
   cancellationReason?: string;
   cancellationDocumentUrl?: string;
   previousStatus?: 'En attente' | 'En cours';
-  estimatedDistance?: number;
-  estimatedDuration?: number;
-  estimatedPrice?: number;
+  paymentStatus?: 'unpaid' | 'escrow_held' | 'released' | 'refunded';
+  paymentMethod?: 'orange_money' | 'mtn_momo' | 'bank_transfer';
+  priceTotal?: number;
+  commissionAmount?: number;
+  payoutAmount?: number;
+  otpCode?: string;
+  insurancePrice?: number;
+  price?: number;
 }

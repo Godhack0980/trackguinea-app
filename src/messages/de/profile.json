@@ -1,0 +1,13 @@
+{
+  "profile_title": "Mein Profil & Einstellungen",
+  "profile_subtitle": "Verwalten Sie Ihre Kontodaten, Kontaktdaten und Sicherheitspräferenzen.",
+  "profile_company_details": "Unternehmensdetails",
+  "profile_user_details": "Persönliche Informationen",
+  "profile_company_name": "Unternehmensname",
+  "profile_first_name": "Vorname",
+  "profile_last_name": "Nachname",
+  "profile_email": "E-Mail-Adresse",
+  "profile_phone": "Telefonnummer",
+  "profile_role": "Rolle auf der Plattform",
+  "profile_save_success": "Profil erfolgreich aktualisiert!"
+}

@@ -1,0 +1,17 @@
+{
+  "invoices_title": "Facturación y Costos",
+  "invoices_subtitle": "Genere facturas, registre gastos y optimice sus márgenes netos.",
+  "invoices_rev": "Volumen de Negocio",
+  "invoices_exp": "Gastos Registrados",
+  "invoices_net": "Beneficio Neto",
+  "invoices_margin": "Margen Operativo",
+  "invoices_log_cost": "Registrar Gastos de Viaje",
+  "invoices_fuel": "Combustible / Diésel (GNF)",
+  "invoices_tolls": "Peajes y Costos de Ruta (GNF)",
+  "invoices_allowance": "Indemnización de Conductor (GNF)",
+  "invoices_other": "Otros Costos (GNF)",
+  "invoices_save_cost": "Registrar gasto",
+  "invoices_auto": "Facturación Automática e Invoices",
+  "invoices_auto_desc": "Ver viajes completados y generar facturas para clientes.",
+  "invoices_print_btn": "Imprimir / PDF"
+}

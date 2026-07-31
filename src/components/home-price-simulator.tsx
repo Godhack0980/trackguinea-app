@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -17,26 +17,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { Calculator, Loader2, Bot, ArrowRight, TrendingUp, DraftingCompass, AlertTriangle } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
-
-// This schema should match a subset of SimulatePriceInputSchema
-const homeSimulatorSchema = z.object({
-  from: z.string().min(1, "La ville de départ est requise."),
-  to: z.string().min(1, "La ville d'arrivée est requise."),
-  weight: z.preprocess(
-    (a) => parseFloat(z.string().parse(a)),
-    z.number().positive("Le poids doit être un nombre positif.")
-  ),
-}).refine(data => data.from !== data.to, {
-  message: "Le départ et l'arrivée doivent être différents.",
-  path: ["to"],
-});
-
+import { useTranslation } from "@/lib/translations"
 
 export default function HomePriceSimulator() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [simulationResult, setSimulationResult] = useState<SimulatePriceOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // This schema matches a subset of SimulatePriceInputSchema with localized error messages
+  const homeSimulatorSchema = useMemo(() => z.object({
+    from: z.string().min(1, t('pricing.err_departure_required')),
+    to: z.string().min(1, t('pricing.err_destination_required')),
+    weight: z.preprocess(
+      (a) => parseFloat(z.string().parse(a)),
+      z.number().positive(t('pricing.err_weight_positive'))
+    ),
+  }).refine(data => data.from !== data.to, {
+    message: t('pricing.err_route_identical'),
+    path: ["to"],
+  }), [t]);
 
   const form = useForm<z.infer<typeof homeSimulatorSchema>>({
     resolver: zodResolver(homeSimulatorSchema),
@@ -60,15 +60,15 @@ export default function HomePriceSimulator() {
       });
       setSimulationResult(result);
       toast({
-        title: "Simulation terminée !",
-        description: "Voici une estimation pour votre course.",
+        title: t('pricing.sim_success_toast'),
+        description: t('pricing.sim_success_toast_desc'),
       });
     } catch (error) {
       console.error("Erreur lors de la simulation:", error);
       toast({
         variant: "destructive",
-        title: "Erreur de simulation",
-        description: "Impossible d'obtenir une estimation pour le moment.",
+        title: t('pricing.sim_error_toast'),
+        description: t('pricing.sim_error_toast_desc'),
       });
     } finally {
       setIsLoading(false);
@@ -81,8 +81,8 @@ export default function HomePriceSimulator() {
         <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
              <Calculator className="h-8 w-8 text-primary"/>
         </div>
-        <CardTitle className="font-headline text-2xl pt-2">Obtenez une estimation gratuite</CardTitle>
-        <CardDescription>Simulez le coût de votre transport en quelques clics.</CardDescription>
+        <CardTitle className="font-headline text-2xl pt-2">{t('pricing.home_sim_title')}</CardTitle>
+        <CardDescription>{t('pricing.home_sim_desc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -92,14 +92,14 @@ export default function HomePriceSimulator() {
                 name="from"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Départ</FormLabel>
+                    <FormLabel>{t('pricing.home_sim_from')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Sélectionnez" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('pricing.sim_cargo_placeholder')} /></SelectTrigger>
                       </FormControl>
-                      <SelectContent><SelectContent>
+                      <SelectContent>
                         {cityNames.map(city => <SelectItem key={`from-${city}`} value={city}>{city}</SelectItem>)}
-                      </SelectContent></SelectContent>
+                      </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
@@ -110,10 +110,10 @@ export default function HomePriceSimulator() {
                 name="to"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Arrivée</FormLabel>
+                    <FormLabel>{t('pricing.home_sim_to')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger><SelectValue placeholder="Sélectionnez" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder={t('pricing.sim_cargo_placeholder')} /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {cityNames.map(city => <SelectItem key={`to-${city}`} value={city}>{city}</SelectItem>)}
@@ -128,7 +128,7 @@ export default function HomePriceSimulator() {
                 name="weight"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Poids (tonnes)</FormLabel>
+                    <FormLabel>{t('pricing.home_sim_weight')}</FormLabel>
                     <FormControl>
                       <Input type="number" placeholder="Ex: 10" {...field} value={field.value || ''} />
                     </FormControl>
@@ -138,20 +138,20 @@ export default function HomePriceSimulator() {
               />
             <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calculator className="mr-2 h-4 w-4" />}
-                {isLoading ? "Calcul..." : "Estimer"}
+                {isLoading ? t('pricing.home_sim_calculating') : t('pricing.home_sim_estimate')}
             </Button>
           </form>
         </Form>
         {isLoading && (
             <div className="flex flex-col items-center justify-center h-24 text-muted-foreground mt-4">
               <Bot className="h-8 w-8 animate-pulse" />
-              <p className="mt-2 text-sm">Notre IA analyse votre demande...</p>
+              <p className="mt-2 text-sm">{t('pricing.home_sim_ai_loading')}</p>
             </div>
         )}
         {simulationResult && !isLoading && (
             <div className="mt-6 space-y-4">
                 <CardFooter className="flex-col items-start p-0">
-                    <p className="text-sm text-muted-foreground">Estimation du coût du trajet</p>
+                    <p className="text-sm text-muted-foreground">{t('pricing.home_sim_estimation_label')}</p>
                     <p className="text-3xl font-bold font-headline text-primary">
                         {simulationResult.minPrice.toLocaleString('fr-FR')} GNF
                     </p>
@@ -161,9 +161,9 @@ export default function HomePriceSimulator() {
                 </CardFooter>
                  <Alert>
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Attention</AlertTitle>
+                    <AlertTitle>{t('pricing.home_sim_warning_title')}</AlertTitle>
                     <AlertDescription className="text-xs">
-                        Ceci est une estimation. Les prix finaux et la durée peuvent varier en fonction des conditions routières, météorologiques et des spécificités de votre demande. Nous vous encourageons à nous contacter pour finaliser les détails.
+                        {t('pricing.home_sim_warning_desc')}
                     </AlertDescription>
                 </Alert>
             </div>

@@ -1,0 +1,12 @@
+{
+  "security_title": "Segurança e Auditoria",
+  "security_subtitle": "Controle de conformidade, listas de suspensão e registro de acessos.",
+  "security_driver_status": "Conformidade do Motorista",
+  "security_driver_desc": "Examine a situação administrativa das tripulações.",
+  "security_audit_log": "Registro de Auditoria de Segurança",
+  "security_audit_desc": "Histórico imutável de logs de segurança.",
+  "security_actor": "Autor",
+  "security_action": "Ação",
+  "security_ip": "Endereço IP",
+  "security_immutable": "Todos os logs estão criptografados e salvos de forma imutável."
+}

@@ -1,0 +1,13 @@
+{
+  "profile_title": "个人信息与密码设置",
+  "profile_subtitle": "更新您的联系手机、登录密码以及谷歌双重认证防护。",
+  "profile_company_details": "物流公司法定工商资料",
+  "profile_user_details": "个人真实信息",
+  "profile_company_name": "物流公司名称",
+  "profile_first_name": "名字 (First Name)",
+  "profile_last_name": "姓氏 (Last Name)",
+  "profile_email": "电子邮箱绑定",
+  "profile_phone": "常用手机号码",
+  "profile_role": "系统用户角色身份",
+  "profile_save_success": "您的账户资料已成功更新！"
+}

@@ -26,7 +26,7 @@ export async function getRouteDetails(origin: string, destination: string): Prom
     
     // IMPORTANT: A real application should use a secure API key from environment variables.
     // This key is for demonstration purposes only and is restricted.
-    const apiKey = "AIzaSyA0H1SxW7JRoqqmCyhh9ZqH5KmYZn-mBWM";
+    const apiKey = "process.env.NEXT_PUBLIC_MAPBOX_TOKEN!";
     const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${originCoords.lat},${originCoords.lng}&destination=${destinationCoords.lat},${destinationCoords.lng}&key=${apiKey}`;
 
     try {

@@ -1,0 +1,16 @@
+{
+  "fleet_title": "Gestão da Frota",
+  "fleet_subtitle": "Supervise e gerencie especificações e disponibilidade dos caminhões.",
+  "fleet_add_btn": "Adicionar Veículo",
+  "fleet_insurance_expiry": "Vencimento do Seguro",
+  "fleet_tech_expiry": "Vencimento do IPVA/Licença",
+  "fleet_odometer": "Quilometragem Atual (km)",
+  "fleet_consumption": "Consumo Médio (L/100km)",
+  "fleet_add_maintenance": "Adicionar registro de manutenção",
+  "fleet_maint_type": "Tipo de Manutenção",
+  "fleet_maint_desc": "Descrição",
+  "fleet_maint_cost": "Custo da Manutenção (GNF)",
+  "fleet_maint_history": "Histórico de Manutenções",
+  "fleet_no_maint": "Nenhuma manutenção registrada.",
+  "fleet_no_vehicles": "Nenhum veículo registrado"
+}

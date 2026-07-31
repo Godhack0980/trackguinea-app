@@ -1,0 +1,12 @@
+{
+  "security_title": "Security & Audit",
+  "security_subtitle": "Crew compliance control, exclusion lists and traceability of sensitive operations.",
+  "security_driver_status": "Driver Compliance Status",
+  "security_driver_desc": "Manage cargo access and inspect crew administrative status.",
+  "security_audit_log": "Security Audit Log",
+  "security_audit_desc": "Immutable logs of activities related to access control.",
+  "security_actor": "Actor",
+  "security_action": "Action",
+  "security_ip": "IP Address",
+  "security_immutable": "All logs are encrypted and stored in an immutable registry."
+}

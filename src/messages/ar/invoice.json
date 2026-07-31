@@ -1,0 +1,17 @@
+{
+  "invoices_title": "الفواتير والتكاليف",
+  "invoices_subtitle": "إنشاء فواتير احترافية، تسجيل المصاريف التشغيلية وتحسين الهوامش.",
+  "invoices_rev": "رقم الأعمال / الإيرادات",
+  "invoices_exp": "المصاريف المسجلة",
+  "invoices_net": "صافي الربح",
+  "invoices_margin": "هامش التشغيل",
+  "invoices_log_cost": "تسجيل تكاليف المهمة",
+  "invoices_fuel": "الوقود / الديزل (GNF)",
+  "invoices_tolls": "رسوم الطرق والمرور (GNF)",
+  "invoices_allowance": "بدل السائق (GNF)",
+  "invoices_other": "مصاريف أخرى (GNF)",
+  "invoices_save_cost": "تسجيل المصروف",
+  "invoices_auto": "الفواتير التلقائية والفواتير",
+  "invoices_auto_desc": "عرض الرحلات المكتملة وإعداد الفواتير للعملاء.",
+  "invoices_print_btn": "طباعة / PDF"
+}

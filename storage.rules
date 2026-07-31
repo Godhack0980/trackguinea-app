@@ -14,8 +14,24 @@ service firebase.storage {
       allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
+    // Les photos de véhicules sont lisibles par tous mais modifiables uniquement par leur propriétaire.
+    match /vehicles/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
     // Les justificatifs d'annulation sont accessibles par l'utilisateur qui les téléverse.
     match /cancellations/{requestId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Les pièces jointes des drafts sont accessibles par leur propriétaire.
+    match /drafts/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Les pièces jointes des conversations de chat.
+    match /chat-attachments/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null;
     }
   }

@@ -1,0 +1,12 @@
+{
+  "security_title": "Sécurité & Audit",
+  "security_subtitle": "Contrôle de conformité des équipages, listes d'exclusion et traçabilité des opérations sensibles.",
+  "security_driver_status": "État de conformité des conducteurs",
+  "security_driver_desc": "Gériez l'accès au fret et examinez le statut administratif des équipages.",
+  "security_audit_log": "Registre d'Audit de Sécurité",
+  "security_audit_desc": "Traces immuables d'activités liées au contrôle d'accès.",
+  "security_actor": "Acteur",
+  "security_action": "Action",
+  "security_ip": "Adresse IP",
+  "security_immutable": "Tous les logs sont chiffrés et stockés de façon immuable."
+}

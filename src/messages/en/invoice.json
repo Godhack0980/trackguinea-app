@@ -1,0 +1,17 @@
+{
+  "invoices_title": "Invoices & Costs",
+  "invoices_subtitle": "Generate professional invoices, log operational costs and optimize your net margins.",
+  "invoices_rev": "Turnover",
+  "invoices_exp": "Logged Expenses",
+  "invoices_net": "Net Profit",
+  "invoices_margin": "Operating Margin",
+  "invoices_log_cost": "Log Trip Costs",
+  "invoices_fuel": "Fuel / Diesel (GNF)",
+  "invoices_tolls": "Tolls & Route Costs (GNF)",
+  "invoices_allowance": "Driver Allowance (GNF)",
+  "invoices_other": "Other Costs (GNF)",
+  "invoices_save_cost": "Log expense",
+  "invoices_auto": "Auto-Billing & Invoices",
+  "invoices_auto_desc": "View completed trips and generate invoices for your customers.",
+  "invoices_print_btn": "Print / PDF"
+}

@@ -1,0 +1,16 @@
+{
+  "fleet_title": "إدارة الأسطول",
+  "fleet_subtitle": "الإشراف على مواصفات الشاحنات وصورها وتوافرها.",
+  "fleet_add_btn": "إضافة مركبة",
+  "fleet_insurance_expiry": "انتهاء التأمين",
+  "fleet_tech_expiry": "انتهاء الفحص الفني",
+  "fleet_odometer": "المسافة الحالية (عداد المسافات كم)",
+  "fleet_consumption": "متوسط الاستهلاك (لتر/100كم)",
+  "fleet_add_maintenance": "إضافة سجل صيانة",
+  "fleet_maint_type": "نوع التدخل",
+  "fleet_maint_desc": "الوصف",
+  "fleet_maint_cost": "تكلفة التدخل (GNF)",
+  "fleet_maint_history": "سجل الصيانة",
+  "fleet_no_maint": "لا يوجد صيانة مسجلة.",
+  "fleet_no_vehicles": "لا توجد مركبات مسجلة"
+}

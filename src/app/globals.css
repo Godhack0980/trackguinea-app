@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    --font-poppins: 'Poppins', sans-serif;
+    --font-pt-sans: 'PT Sans', sans-serif;
     --background: 245 35% 98%;
     --foreground: 240 60% 10%;
     --card: 0 0% 100%;
@@ -29,14 +31,14 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 240 60% 10%;
-    --sidebar-primary: 250 84% 54%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 250 30% 96%;
-    --sidebar-accent-foreground: 250 84% 54%;
-    --sidebar-border: 240 20% 88%;
-    --sidebar-ring: 250 84% 54%;
+    --sidebar-background: 245 45% 7%;
+    --sidebar-foreground: 240 20% 98%;
+    --sidebar-primary: 250 90% 65%;
+    --sidebar-primary-foreground: 245 45% 7%;
+    --sidebar-accent: 250 30% 15%;
+    --sidebar-accent-foreground: 240 20% 98%;
+    --sidebar-border: 245 25% 14%;
+    --sidebar-ring: 250 90% 65%;
   }
   .dark {
     --background: 245 50% 5%;
@@ -64,13 +66,13 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    --sidebar-background: 245 40% 8%;
+    --sidebar-background: 245 50% 4%;
     --sidebar-foreground: 240 20% 98%;
     --sidebar-primary: 250 90% 65%;
-    --sidebar-primary-foreground: 245 50% 5%;
-    --sidebar-accent: 245 30% 15%;
+    --sidebar-primary-foreground: 245 50% 4%;
+    --sidebar-accent: 245 25% 10%;
     --sidebar-accent-foreground: 240 20% 98%;
-    --sidebar-border: 245 20% 15%;
+    --sidebar-border: 245 20% 10%;
     --sidebar-ring: 250 90% 65%;
   }
 }

@@ -1,0 +1,17 @@
+{
+  "invoices_title": "Faturamento e Custos",
+  "invoices_subtitle": "Gere faturas, registre despesas e otimize margens líquidas.",
+  "invoices_rev": "Faturamento",
+  "invoices_exp": "Despesas Registradas",
+  "invoices_net": "Lucro Líquido",
+  "invoices_margin": "Margem Operacional",
+  "invoices_log_cost": "Registrar Gastos de Viagem",
+  "invoices_fuel": "Combustible / Diesel (GNF)",
+  "invoices_tolls": "Pedágios e Custos de Rota (GNF)",
+  "invoices_allowance": "Diária do Motorista (GNF)",
+  "invoices_other": "Outros Custos (GNF)",
+  "invoices_save_cost": "Registrar despesa",
+  "invoices_auto": "Faturamento Automático e Faturas",
+  "invoices_auto_desc": "Ver viagens concluídas e faturar clientes.",
+  "invoices_print_btn": "Imprimir / PDF"
+}

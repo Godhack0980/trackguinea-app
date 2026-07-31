@@ -1,0 +1,16 @@
+{
+  "fleet_title": "Flottenmanagement",
+  "fleet_subtitle": "Überwachen und verwalten Sie Spezifikationen, Fotos und Verfügbarkeit Ihrer Lkw.",
+  "fleet_add_btn": "Fahrzeug hinzufügen",
+  "fleet_insurance_expiry": "Ablauf Versicherung",
+  "fleet_tech_expiry": "Ablauf technische Inspektion",
+  "fleet_odometer": "Aktueller Kilometerstand (Odometer in km)",
+  "fleet_consumption": "Durchschnittsverbrauch (L/100km)",
+  "fleet_add_maintenance": "Wartungseintrag hinzufügen",
+  "fleet_maint_type": "Interventionsart",
+  "fleet_maint_desc": "Beschreibung",
+  "fleet_maint_cost": "Kosten der Intervention (GNF)",
+  "fleet_maint_history": "Wartungshistorie",
+  "fleet_no_maint": "Keine Wartungen eingetragen.",
+  "fleet_no_vehicles": "Keine Fahrzeuge registriert"
+}
