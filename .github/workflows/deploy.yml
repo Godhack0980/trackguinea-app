@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -27,24 +27,22 @@ jobs:
 
       - name: Remove unnecessary files
         run: |
-          rm -rf node_modules
           rm -rf .git
+          rm -rf .github
 
-      - name: Package application
-        run: |
-          tar -czf transconnekt.tar.gz .
-
-      - name: Deploy to o2switch
+      - name: Upload project to o2switch
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          source: "transconnekt.tar.gz"
-          target: "/home/camo1783"
+          source: "."
+          target: "/home/camo1783/transconnekt.com"
+          strip_components: 0
+          overwrite: true
 
-      - name: Install and Restart
+      - name: Install dependencies on server and restart
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOST }}
@@ -54,14 +52,10 @@ jobs:
           script: |
             source /home/camo1783/nodevenv/transconnekt.com/22/bin/activate
 
-            cd /home/camo1783
-
-            rm -rf transconnekt.com/*
-            tar -xzf transconnekt.tar.gz -C transconnekt.com
-            rm transconnekt.tar.gz
-
-            cd transconnekt.com
+            cd /home/camo1783/transconnekt.com
 
             npm install --omit=dev
 
             touch /home/camo1783/tmp/restart.txt
+
+            echo "Deployment completed."
