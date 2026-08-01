@@ -1,4 +1,4 @@
-name: Deploy TransConnekt to o2switch
+name: Deploy TransConnekt
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -22,27 +22,34 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Next.js
+      - name: Build
         run: npm run build
 
-      - name: Remove unnecessary files
-        run: |
-          rm -rf .git
-          rm -rf .github
-
-      - name: Upload project to o2switch
+      - name: Upload project
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          source: "."
+          source: |
+            .next
+            public
+            src
+            scripts
+            docs
+            package.json
+            package-lock.json
+            next.config.js
+            postcss.config.mjs
+            tailwind.config.ts
+            tsconfig.json
+            components.json
+            server.js
+            app.js
           target: "/home/camo1783/transconnekt.com"
-          strip_components: 0
-          overwrite: true
 
-      - name: Install dependencies on server and restart
+      - name: Restart application
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOST }}
@@ -51,11 +58,6 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             source /home/camo1783/nodevenv/transconnekt.com/22/bin/activate
-
             cd /home/camo1783/transconnekt.com
-
             npm install --omit=dev
-
             touch /home/camo1783/tmp/restart.txt
-
-            echo "Deployment completed."
