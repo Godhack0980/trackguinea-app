@@ -4,12 +4,12 @@ import { initializeFirestore, getFirestore, Firestore } from "firebase/firestore
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  "projectId": "trackguinea",
-  "appId": "1:870790440395:web:552a79ce5837ca73ed424e",
-  "storageBucket": "trackguinea.firebasestorage.app",
-  "apiKey": "process.env.NEXT_PUBLIC_MAPBOX_TOKEN!",
-  "authDomain": "trackguinea.firebaseapp.com",
-  "messagingSenderId": "870790440395"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
+  authDomain: "trackguinea.firebaseapp.com",
+  projectId: "trackguinea",
+  storageBucket: "trackguinea.firebasestorage.app",
+  messagingSenderId: "870790440395",
+  appId: "1:870790440395:web:552a79ce5837ca73ed424e",
 };
 
 // Initialize Firebase app (singleton guard for Next.js HMR fast-refresh)
