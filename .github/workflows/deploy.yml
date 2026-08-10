@@ -1,0 +1,54 @@
+name: Deploy to o2switch via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy Application to o2switch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to o2switch via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || '2222' }}
+          script: |
+            echo "🚀 Début du déploiement sur o2switch..."
+            
+            # Se déplacer dans le répertoire de l'application
+            cd ${{ secrets.TARGET_DIR }} || exit 1
+            
+            # Récupérer la dernière version du code depuis GitHub
+            echo "📥 Git Pull..."
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Installer les dépendances
+            echo "📦 Installation des dépendances..."
+            npm ci --production=false
+            
+            # Build Next.js
+            echo "🏗️ Build Next.js..."
+            npm run build
+            
+            # Redémarrer l'application Node.js sur cPanel o2switch
+            echo "🔄 Redémarrage de l'application..."
+            if [ -d "tmp" ]; then
+              touch tmp/restart.txt
+            fi
+            
+            # Si PM2 est utilisé sur le serveur o2switch
+            if command -v pm2 &> /dev/null; then
+              pm2 restart trackguinea-app || pm2 start npm --name "trackguinea-app" -- start
+            fi
+            
+            echo "✅ Déploiement o2switch terminé avec succès !"
