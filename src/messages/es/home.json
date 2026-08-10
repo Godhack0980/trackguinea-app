@@ -136,5 +136,21 @@
   "transporter_feat3_title": "Gestión de flota gratuita",
   "transporter_feat3_desc": "Registre sus camiones, asigne misiones a sus conductores y gestione sus horarios con facilidad.",
   "transporter_feat4_title": "Mayor visibilidad en línea",
-  "transporter_feat4_desc": "Publique sus vehículos disponibles en nuestra Galería Pública para que los clientes profesionales y particulares contacten con usted directamente."
+  "transporter_feat4_desc": "Publique sus vehículos disponibles en nuestra Galería Pública para que los clientes profesionales y particulares contacten con usted directamente.",
+  "nav_docs": "Documentación",
+  "docs_hero_badge": "Centro de Ayuda y Documentación Oficial",
+  "docs_hero_title": "Documentación Completa TransConnekt",
+  "docs_hero_desc": "Consulte el manual oficial de usuario de la plataforma, descubra guías paso a paso y descargue formatos imprimibles.",
+  "docs_btn_print": "Imprimir / PDF",
+  "docs_btn_download_html": "Descargar HTML",
+  "docs_btn_download_md": "Descargar Markdown (.MD)",
+  "docs_card1_title": "Guías de Remitentes",
+  "docs_card1_desc": "Creación de solicitudes, seguimiento GPS de paquetes y validación de presupuestos.",
+  "docs_card2_title": "Portal de Transportistas",
+  "docs_card2_desc": "Auditoría de cumplimiento (250k GNF), comisión del 2,5% y ofertas de carga.",
+  "docs_card3_title": "Rastreo y API",
+  "docs_card3_desc": "Seguimiento GPS en tiempo real en las 33 prefecturas de Guinea.",
+  "docs_viewer_title": "Manual de usuario interactivo v1.0",
+  "docs_btn_fullscreen": "Abrir en pantalla completa",
+  "docs_btn_back": "Página Cómo funciona"
 }

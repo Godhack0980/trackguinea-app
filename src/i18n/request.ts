@@ -23,7 +23,9 @@ export default getRequestConfig(async ({requestLocale}) => {
         const filePath = path.join(messagesDir, file);
         try {
           const content = fs.readFileSync(filePath, 'utf-8');
-          messages[key] = JSON.parse(content);
+          if (content && content.trim()) {
+            messages[key] = JSON.parse(content);
+          }
         } catch (e) {
           console.error(`Failed to load translation file: ${filePath}`, e);
         }

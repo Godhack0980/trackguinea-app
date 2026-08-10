@@ -548,9 +548,80 @@ export default function ClientFleetGalleryPage() {
                   </div>
                 </div>
 
+                {/* Vehicle Health Panel */}
+                {selectedVehicle && (
+                  (() => {
+                    const hash = selectedVehicle.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+                    const mileage = 45000 + (hash * 1237) % 200000;
+                    const nextOilChange = 500 + (hash * 31) % 4500;
+                    const healthPercent = 40 + (hash * 17) % 60; 
+                    const daysToVisite = 5 + (hash * 11) % 180;
+                    const insuranceValid = (hash % 10) > 1;
+                    const tiresCondition = (hash % 5) === 0 ? "⚠️ attention" : "✅ bon état";
+                    
+                    let healthColor = "bg-emerald-500";
+                    let healthText = "text-emerald-400";
+                    if (healthPercent < 70) {
+                      healthColor = "bg-rose-500";
+                      healthText = "text-rose-400";
+                    } else if (healthPercent < 85) {
+                      healthColor = "bg-amber-500";
+                      healthText = "text-amber-400";
+                    }
+                    
+                    return (
+                      <div className="p-4 bg-slate-900/50 border border-slate-800/60 rounded-2xl mt-2 space-y-3">
+                        <div className="flex justify-between items-center border-b border-slate-800/50 pb-2">
+                          <h4 className="font-bold text-white flex items-center gap-1.5 text-sm">
+                            Santé du Véhicule
+                          </h4>
+                          <span className={cn("text-xs font-bold", healthText)}>
+                            {healthPercent}% - {healthPercent >= 85 ? "🟢 Disponible" : healthPercent >= 70 ? "🟡 À surveiller" : "🔴 Critique"}
+                          </span>
+                        </div>
+                        
+                        {/* Progress Bar */}
+                        <div className="space-y-1">
+                          <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+                            <div className={cn("h-full rounded-full transition-all duration-1000", healthColor)} style={{ width: `${healthPercent}%` }} />
+                          </div>
+                        </div>
+
+                        {/* Health Stats */}
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                          <div className="p-2 bg-slate-950/50 rounded-xl border border-slate-800/50 flex flex-col gap-0.5">
+                            <span className="text-[10px] text-muted-foreground uppercase">Kilométrage</span>
+                            <span className="font-bold text-slate-200">{mileage.toLocaleString("fr-FR")} km</span>
+                          </div>
+                          <div className="p-2 bg-slate-950/50 rounded-xl border border-slate-800/50 flex flex-col gap-0.5">
+                            <span className="text-[10px] text-muted-foreground uppercase">Prochaine vidange</span>
+                            <span className="font-bold text-slate-200">{nextOilChange.toLocaleString("fr-FR")} km</span>
+                          </div>
+                          <div className="p-2 bg-slate-950/50 rounded-xl border border-slate-800/50 flex flex-col gap-0.5">
+                            <span className="text-[10px] text-muted-foreground uppercase">Visite technique</span>
+                            <span className="font-bold text-slate-200">{daysToVisite} jours</span>
+                          </div>
+                          <div className="p-2 bg-slate-950/50 rounded-xl border border-slate-800/50 flex flex-col gap-0.5">
+                            <span className="text-[10px] text-muted-foreground uppercase">Assurance / Pneus</span>
+                            <span className="font-bold text-slate-200">{insuranceValid ? "✅ valide" : "⚠️ expiré"} / {tiresCondition}</span>
+                          </div>
+                        </div>
+
+                        {/* Predictive Maintenance Alert */}
+                        {(healthPercent < 70 || nextOilChange < 1500) && (
+                          <div className="mt-2 p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-xs font-semibold flex items-start gap-2">
+                            <span>⚠️</span>
+                            <span>Une maintenance est probablement nécessaire dans environ {nextOilChange.toLocaleString("fr-FR")} km.</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()
+                )}
+
                 {/* Description */}
                 {selectedVehicle.description && (
-                  <div className="p-4 bg-[#080C14] border border-slate-800/60 rounded-2xl text-xs space-y-1.5">
+                  <div className="p-4 bg-[#080C14] border border-slate-800/60 rounded-2xl text-xs space-y-1.5 mt-2">
                     <h4 className="font-bold text-muted-foreground flex items-center gap-1.5 uppercase text-[10px]">
                       <Compass size={13} className="text-indigo-400" /> Description du transporteur
                     </h4>

@@ -275,46 +275,46 @@ export default function InvoicesPage() {
 
       {/* Cartes d'Analytics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-border/50 bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
+        <Card className="border-slate-200 dark:border-border/50 bg-white dark:bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs text-slate-400 font-bold uppercase">{t.invoices_rev}</span>
             <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400"><ArrowUpRight size={16}/></span>
           </div>
           <div className="mt-2">
-            <h3 className="text-xl font-black text-white">{analytics.totalRevenue.toLocaleString('fr-FR')} GNF</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">{analytics.totalRevenue.toLocaleString('fr-FR')} GNF</h3>
             <p className="text-[10px] text-emerald-400 font-semibold mt-0.5">Missions complétées uniquement</p>
           </div>
         </Card>
 
-        <Card className="border-border/50 bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
+        <Card className="border-slate-200 dark:border-border/50 bg-white dark:bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs text-slate-400 font-bold uppercase">{t.invoices_exp}</span>
             <span className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400"><ArrowDownRight size={16}/></span>
           </div>
           <div className="mt-2">
-            <h3 className="text-xl font-black text-white">{analytics.totalExpenses.toLocaleString('fr-FR')} GNF</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">{analytics.totalExpenses.toLocaleString('fr-FR')} GNF</h3>
             <p className="text-[10px] text-rose-400 font-semibold mt-0.5">Carburant, Péage & Indemnités</p>
           </div>
         </Card>
 
-        <Card className="border-border/50 bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
+        <Card className="border-slate-200 dark:border-border/50 bg-white dark:bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs text-slate-400 font-bold uppercase">{t.invoices_net}</span>
             <span className="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400"><Wallet size={16}/></span>
           </div>
           <div className="mt-2">
-            <h3 className="text-xl font-black text-white">{analytics.netProfit.toLocaleString('fr-FR')} GNF</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">{analytics.netProfit.toLocaleString('fr-FR')} GNF</h3>
             <p className="text-[10px] text-indigo-400 font-semibold mt-0.5">Marge sur coûts directs</p>
           </div>
         </Card>
 
-        <Card className="border-border/50 bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
+        <Card className="border-slate-200 dark:border-border/50 bg-white dark:bg-[#0d1322]/80 shadow-xl rounded-2xl p-4 flex flex-col justify-between">
           <div className="flex justify-between items-center">
             <span className="text-xs text-slate-400 font-bold uppercase">{t.invoices_margin}</span>
             <span className="p-1.5 rounded-lg bg-yellow-500/10 text-yellow-400"><Coins size={16}/></span>
           </div>
           <div className="mt-2">
-            <h3 className="text-xl font-black text-white">{analytics.margin}%</h3>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white">{analytics.margin}%</h3>
             <p className="text-[10px] text-yellow-400 font-semibold mt-0.5">Taux de profit moyen</p>
           </div>
         </Card>
@@ -322,20 +322,20 @@ export default function InvoicesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Log Costs Card */}
-        <Card className="lg:col-span-1 border-border/50 bg-card/60 backdrop-blur-md shadow-xl rounded-3xl">
+        <Card className="lg:col-span-1 border-slate-200 dark:border-border/50 bg-white dark:bg-card/60 backdrop-blur-md shadow-xl rounded-3xl">
           <CardHeader>
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
               <Coins size={20} className="text-indigo-400" /> {t.invoices_log_cost}
             </CardTitle>
-            <CardDescription>Renseignez les coûts réels d&apos;un trajet spécifique.</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-slate-400">Renseignez les coûts réels d&apos;un trajet spécifique.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogCost} className="space-y-4">
               <div className="space-y-1">
-                <Label htmlFor="missionId">Sélectionner la Mission *</Label>
+                <Label htmlFor="missionId" className="text-slate-700 dark:text-slate-300">Sélectionner la Mission *</Label>
                 <select
                   id="missionId"
-                  className="w-full bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg p-2 h-9 focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-200 rounded-lg p-2 h-10 focus:ring-1 focus:ring-indigo-500 focus:outline-none"
                   value={costForm.missionId}
                   onChange={e => setCostForm(f => ({ ...f, missionId: e.target.value }))}
                 >
@@ -350,23 +350,23 @@ export default function InvoicesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="fuelCost">Gazole / Carburant (GNF)</Label>
+                  <Label htmlFor="fuelCost" className="text-slate-700 dark:text-slate-300">Gazole / Carburant (GNF)</Label>
                   <Input 
                     id="fuelCost" 
                     type="number"
                     placeholder="Ex: 850000"
-                    className="bg-slate-950 border-slate-800"
+                    className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 h-10 rounded-lg"
                     value={costForm.fuelCost}
                     onChange={e => setCostForm(f => ({ ...f, fuelCost: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="tollCost">Frais de péage & Route (GNF)</Label>
+                  <Label htmlFor="tollCost" className="text-slate-700 dark:text-slate-300">Frais de péage & Route (GNF)</Label>
                   <Input 
                     id="tollCost" 
                     type="number"
                     placeholder="Ex: 120000"
-                    className="bg-slate-950 border-slate-800"
+                    className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 h-10 rounded-lg"
                     value={costForm.tollCost}
                     onChange={e => setCostForm(f => ({ ...f, tollCost: e.target.value }))}
                   />
@@ -375,23 +375,23 @@ export default function InvoicesPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label htmlFor="driverAllowance">Indemnité Chauffeur (GNF)</Label>
+                  <Label htmlFor="driverAllowance" className="text-slate-700 dark:text-slate-300">Indemnité Chauffeur (GNF)</Label>
                   <Input 
                     id="driverAllowance" 
                     type="number"
                     placeholder="Ex: 250000"
-                    className="bg-slate-950 border-slate-800"
+                    className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 h-10 rounded-lg"
                     value={costForm.driverAllowance}
                     onChange={e => setCostForm(f => ({ ...f, driverAllowance: e.target.value }))}
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="otherCost">Frais Divers (GNF)</Label>
+                  <Label htmlFor="otherCost" className="text-slate-700 dark:text-slate-300">Frais Divers (GNF)</Label>
                   <Input 
                     id="otherCost" 
                     type="number"
                     placeholder="Ex: 50000"
-                    className="bg-slate-950 border-slate-800"
+                    className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 h-10 rounded-lg"
                     value={costForm.otherCost}
                     onChange={e => setCostForm(f => ({ ...f, otherCost: e.target.value }))}
                   />
@@ -399,17 +399,17 @@ export default function InvoicesPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="notes">Notes / Ravitaillement</Label>
+                <Label htmlFor="notes" className="text-slate-700 dark:text-slate-300">Notes / Ravitaillement</Label>
                 <Input 
                   id="notes" 
                   placeholder="Commentaire ou N° ticket"
-                  className="bg-slate-950 border-slate-800"
+                  className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 h-10 rounded-lg"
                   value={costForm.notes}
                   onChange={e => setCostForm(f => ({ ...f, notes: e.target.value }))}
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold flex items-center justify-center gap-2">
+              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold h-11 flex items-center justify-center gap-2">
                 <Plus size={16} /> {t.invoices_save_cost}
               </Button>
             </form>
@@ -417,12 +417,12 @@ export default function InvoicesPage() {
         </Card>
 
         {/* Facturation & Téléchargement Invoices */}
-        <Card className="lg:col-span-2 border-border/50 bg-card/60 backdrop-blur-md shadow-xl rounded-3xl overflow-hidden">
+        <Card className="lg:col-span-2 border-slate-200 dark:border-border/50 bg-white dark:bg-card/60 backdrop-blur-md shadow-xl rounded-3xl overflow-hidden">
           <CardHeader className="border-b border-border/20">
-            <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+            <CardTitle className="text-lg font-bold flex items-center gap-2 text-slate-900 dark:text-white">
               {t.invoices_auto}
             </CardTitle>
-            <CardDescription>{t.invoices_auto_desc}</CardDescription>
+            <CardDescription className="text-slate-500 dark:text-slate-400">{t.invoices_auto_desc}</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             {loading ? (
@@ -439,7 +439,7 @@ export default function InvoicesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse min-w-[650px] text-sm">
                   <thead>
-                    <tr className="border-b border-border/20 bg-slate-950/20 text-left text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/80 text-left text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                       <th className="p-4 pl-6">Course / Mission</th>
                       <th className="p-4">Client</th>
                       <th className="p-4">Tarif (GNF)</th>
@@ -447,24 +447,24 @@ export default function InvoicesPage() {
                       <th className="p-4 pr-6 text-right">Facture PDF</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/20 font-medium">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
                     {missions.map((m) => (
-                      <tr key={m.id} className="hover:bg-slate-900/30 transition-all">
+                      <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-all">
                         <td className="p-4 pl-6">
                           <div className="flex flex-col">
-                            <span className="font-bold text-slate-200">{m.from} → {m.to}</span>
-                            <span className="text-[10px] text-muted-foreground font-mono">ID: {m.id.substring(0, 8)}...</span>
+                            <span className="font-extrabold text-slate-900 dark:text-white">{m.from} → {m.to}</span>
+                            <span className="text-[10px] text-slate-500 font-mono">ID: {m.id.substring(0, 8)}...</span>
                           </div>
                         </td>
-                        <td className="p-4 text-xs text-slate-300">{m.clientName || "Client"}</td>
-                        <td className="p-4 font-bold text-white">
+                        <td className="p-4 text-xs font-bold text-slate-800 dark:text-slate-200">{m.clientName || "Client"}</td>
+                        <td className="p-4 font-black text-xs text-slate-900 dark:text-white">
                           {Number(m.price || 0).toLocaleString('fr-FR')} GNF
                         </td>
                         <td className="p-4">
-                          <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full border ${
+                          <span className={`inline-flex px-2.5 py-0.5 text-[10px] font-black uppercase rounded-full border ${
                             m.status === "Terminé" 
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30"
+                              : "bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 border-amber-300 dark:border-amber-500/30"
                           }`}>
                             {m.status}
                           </span>
@@ -474,7 +474,7 @@ export default function InvoicesPage() {
                             onClick={() => handlePrintInvoice(m)}
                             variant="ghost" 
                             size="sm"
-                            className="text-indigo-400 hover:text-indigo-300 font-bold flex items-center gap-1 ml-auto"
+                            className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-extrabold flex items-center gap-1 ml-auto rounded-xl"
                           >
                             <Printer size={14} /> Imprimer / PDF
                           </Button>

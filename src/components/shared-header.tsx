@@ -21,31 +21,29 @@ const LANGUAGES: { code: Language; flag: string; label: string; name: string }[]
 ];
 
 /* ─── Nav links config (keys map to home.json nav_* keys) ─── */
-const NAV_KEYS: { href: string; key: string }[] = [
-  { href: '/',             key: 'nav_home' },
-  { href: '/services',     key: 'nav_services' },
-  { href: '/offers',       key: 'nav_offers' },
-  { href: '/fleet',        key: 'nav_vehicles' },
-  { href: '/how-it-works', key: 'nav_how' },
-  { href: '/docs',         key: 'nav_docs' },
-  { href: '/why-us',       key: 'nav_why' },
-  { href: '/testimonials', key: 'nav_testimonials' },
-  { href: '/contact',      key: 'nav_contact' },
+const NAV_KEYS: { href: string; key: string; fallbackFr: string }[] = [
+  { href: '/',             key: 'nav_home',         fallbackFr: 'Accueil' },
+  { href: '/services',     key: 'nav_services',     fallbackFr: 'Nos Services' },
+  { href: '/offers',       key: 'nav_offers',       fallbackFr: 'Offres & Fret' },
+  { href: '/fleet',        key: 'nav_vehicles',     fallbackFr: 'Flotte' },
+  { href: '/how-it-works', key: 'nav_how',          fallbackFr: 'Comment ça marche' },
+  { href: '/docs',         key: 'nav_docs',         fallbackFr: 'Documentation' },
+  { href: '/why-us',       key: 'nav_why',          fallbackFr: 'Pourquoi nous' },
+  { href: '/testimonials', key: 'nav_testimonials', fallbackFr: 'Témoignages' },
+  { href: '/contact',      key: 'nav_contact',      fallbackFr: 'Contact' },
 ];
 
 export default function SharedHeader() {
   const { t, lang, setLanguage } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
-  const [mobileLangDropdownOpen, setMobileLangDropdownOpen] = useState(false);
+  const [mobileLangDropdownOpen, setMobileLangDropdownOpen] = useState(true);
   const langDropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const isHome = pathname === '/';
 
   useEffect(() => {
-    setMounted(true);
     const onScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
@@ -70,6 +68,14 @@ export default function SharedHeader() {
     setLangDropdownOpen(false);
     setMobileLangDropdownOpen(false);
     setMobileOpen(false);
+  };
+
+  const getNavLabel = (link: { key: string; fallbackFr: string }) => {
+    const translated = t(`home.${link.key}`);
+    if (translated && typeof translated === 'string' && translated !== `home.${link.key}` && translated !== link.key) {
+      return translated;
+    }
+    return link.fallbackFr;
   };
 
   /* Home page: transparent → indigo on scroll. All other pages: always indigo */
@@ -98,7 +104,7 @@ export default function SharedHeader() {
                     : 'text-white/80 hover:text-white hover:bg-white/10'
                 }`}
               >
-                {mounted ? t(`home.${link.key}`) : link.key.replace('nav_', '')}
+                {getNavLabel(link)}
               </Link>
             ))}
           </nav>
@@ -111,7 +117,7 @@ export default function SharedHeader() {
                 size="sm"
                 onClick={() => setLangDropdownOpen(prev => !prev)}
                 className="rounded-full hover:bg-white/10 text-white transition-all duration-300 h-9 px-3 gap-1.5 text-sm font-semibold"
-                title={mounted ? t('home.lang_label') : 'Language'}
+                title={t('home.lang_label') || 'Langue'}
               >
                 <span className="text-base leading-none">{currentLang.flag}</span>
                 <span className="hidden lg:inline">{currentLang.label}</span>
@@ -144,7 +150,7 @@ export default function SharedHeader() {
 
             <Link href="/login">
               <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10 text-sm h-9 px-4 rounded-full transition-all duration-300">
-                {mounted ? t('home.nav_login') : 'Se connecter'} <LogIn className="ml-2 h-4 w-4" />
+                {t('home.nav_login') || 'Se connecter'} <LogIn className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/signup/client">
@@ -152,7 +158,7 @@ export default function SharedHeader() {
                 className="btn-glow font-semibold text-white text-sm border-0 shadow-lg h-9 px-4 rounded-full transition-all duration-300 hover:scale-105"
                 style={{ background: 'linear-gradient(135deg, hsl(322 85% 50%), hsl(340 90% 58%))' }}
               >
-                {mounted ? t('home.nav_register') : "S'inscrire"} <UserPlus className="ml-2 h-4 w-4" />
+                {t('home.nav_register') || "S'inscrire"} <UserPlus className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
@@ -171,10 +177,10 @@ export default function SharedHeader() {
       {/* Mobile menu */}
       <div
         className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+          mobileOpen ? 'max-h-[85vh] overflow-y-auto opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="bg-[#4a486e]/95 backdrop-blur-xl border-t border-[#4a486e]/20 px-4 py-3 space-y-1">
+        <div className="bg-[#4a486e]/95 backdrop-blur-xl border-t border-[#4a486e]/20 px-4 py-3 space-y-2">
           {NAV_KEYS.map(link => (
             <Link
               key={link.href}
@@ -184,13 +190,13 @@ export default function SharedHeader() {
                 pathname === link.href ? 'text-white' : 'text-white/70 hover:text-white'
               }`}
             >
-              {mounted ? t(`home.${link.key}`) : link.key.replace('nav_', '')}
+              {getNavLabel(link)}
             </Link>
           ))}
-          <div className="flex gap-2 pt-3">
+          <div className="flex gap-2 pt-2">
             <Link href="/login" className="flex-1" onClick={() => setMobileOpen(false)}>
               <Button variant="ghost" className="w-full text-white/80 hover:text-white hover:bg-white/10 text-sm">
-                {mounted ? t('home.nav_login') : 'Se connecter'}
+                {t('home.nav_login') || 'Se connecter'}
               </Button>
             </Link>
             <Link href="/signup/client" className="flex-1" onClick={() => setMobileOpen(false)}>
@@ -198,38 +204,38 @@ export default function SharedHeader() {
                 className="w-full font-semibold text-white text-sm border-0"
                 style={{ background: 'linear-gradient(135deg, hsl(322 85% 50%), hsl(340 90% 58%))' }}
               >
-                {mounted ? t('home.nav_register') : "S'inscrire"}
+                {t('home.nav_register') || "S'inscrire"}
               </Button>
             </Link>
           </div>
 
           {/* ── Mobile Language Selector ── */}
-          <div className="pt-3 border-t border-white/10">
+          <div className="pt-3 pb-2 border-t border-white/10">
             <button
               onClick={() => setMobileLangDropdownOpen(prev => !prev)}
-              className="w-full flex items-center justify-between text-white/60 text-xs font-semibold px-1 py-2"
+              className="w-full flex items-center justify-between text-white/80 text-xs font-semibold px-3 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
             >
               <span className="flex items-center gap-2">
                 <span className="text-base">{currentLang.flag}</span>
-                <span>{mounted ? t('home.lang_label') : 'Langue'} – {currentLang.label}</span>
+                <span>{t('home.lang_label') || 'Langue'} : <strong className="text-white font-bold">{currentLang.name} ({currentLang.label})</strong></span>
               </span>
-              <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${mobileLangDropdownOpen ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`h-4 w-4 opacity-80 transition-transform duration-200 ${mobileLangDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {mobileLangDropdownOpen && (
-              <div className="mt-1 grid grid-cols-5 gap-1">
+              <div className="mt-2 grid grid-cols-2 gap-1.5 max-h-60 overflow-y-auto p-1">
                 {LANGUAGES.map(l => (
                   <button
                     key={l.code}
                     onClick={() => handleLangSelect(l.code)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl text-xs font-semibold transition-colors duration-150 ${
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-150 ${
                       l.code === lang
-                        ? 'bg-primary/25 text-white ring-1 ring-primary/40'
-                        : 'text-white/60 hover:bg-white/10 hover:text-white'
+                        ? 'bg-primary text-white shadow-lg ring-1 ring-white/30 font-bold'
+                        : 'bg-slate-900/60 text-white/80 hover:bg-white/15 hover:text-white border border-white/10'
                     }`}
                   >
-                    <span className="text-xl leading-none">{l.flag}</span>
-                    <span>{l.label}</span>
+                    <span className="text-lg leading-none shrink-0">{l.flag}</span>
+                    <span className="truncate">{l.name}</span>
                   </button>
                 ))}
               </div>

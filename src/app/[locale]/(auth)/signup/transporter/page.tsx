@@ -27,6 +27,10 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowRight, Loader2 } from "lucide-react"
 import { useState } from "react"
 
+import { Checkbox } from "@/components/ui/checkbox"
+import PasswordRequirements from "@/components/password-requirements";
+import { getFirebaseAuthErrorMessage } from "@/lib/firebase-auth-errors";
+
 const prefecturesGuinea = [
   "Conakry", "Beyla", "Boffa", "Boké", "Coyah", "Dabola", "Dalaba", "Dinguiraye", 
   "Dubréka", "Faranah", "Forécariah", "Fria", "Gaoual", "Guéckédou", "Kankan", 
@@ -40,7 +44,13 @@ const formSchema = z.object({
   lastName: z.string().min(1, { message: "Le nom est requis." }),
   email: z.string().email({ message: "Adresse e-mail invalide." }),
   phone: z.string().min(1, { message: "Le téléphone est requis." }),
-  password: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." }),
+  password: z
+    .string()
+    .min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." })
+    .regex(/[A-Z]/, { message: "Au moins une lettre majuscule est requise." })
+    .regex(/[a-z]/, { message: "Au moins une lettre minuscule est requise." })
+    .regex(/[0-9]/, { message: "Au moins un chiffre est requis." })
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, { message: "Au moins un caractère spécial est requis." }),
   licenseType: z.string({ required_error: "Le type de permis est requis."}),
   vehicleRegistration: z.string().min(1, { message: "L'immatriculation est requise." }),
   experienceYears: z.preprocess(
@@ -50,6 +60,9 @@ const formSchema = z.object({
   documentType: z.string().min(1, { message: "Le type de pièce est requis." }),
   documentNumber: z.string().min(1, { message: "Le numéro de pièce est requis." }),
   currentPrefecture: z.string().min(1, { message: "La préfecture d'attache est requise." }),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "Veuillez accepter les CGU et politique de confidentialité.",
+  }),
 })
 
 export default function TransporterSignupPage() {
@@ -71,6 +84,7 @@ export default function TransporterSignupPage() {
       documentType: "",
       documentNumber: "",
       currentPrefecture: "",
+      acceptTerms: false,
     },
   })
 
@@ -137,10 +151,7 @@ export default function TransporterSignupPage() {
 
     } catch (error: any) {
       console.error(error);
-      let errMsg = "Une erreur est survenue lors de l'inscription.";
-      if (error.code === 'auth/email-already-in-use') {
-        errMsg = "Cette adresse e-mail est déjà utilisée.";
-      }
+      const errMsg = getFirebaseAuthErrorMessage(error);
       toast({
         variant: "destructive",
         title: "Erreur d'inscription",
@@ -341,7 +352,37 @@ export default function TransporterSignupPage() {
                   <FormControl>
                     <PasswordInput placeholder="********" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
                   </FormControl>
+                  <PasswordRequirements password={field.value} />
                   <FormMessage className="text-red-400 text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="acceptTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="bg-[#0D1322] border-slate-800 text-white data-[state=checked]:bg-primary mt-0.5"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none text-left">
+                    <FormLabel className="text-slate-300 text-xs cursor-pointer select-none">
+                      J'accepte les{" "}
+                      <Link href="/terms" className="text-primary hover:underline font-semibold" target="_blank">
+                        Conditions Générales d'Utilisation (CGU)
+                      </Link>{" "}
+                      et la{" "}
+                      <Link href="/privacy" className="text-primary hover:underline font-semibold" target="_blank">
+                        Politique de Confidentialité
+                      </Link>
+                    </FormLabel>
+                    <FormMessage className="text-red-400 text-[11px]" />
+                  </div>
                 </FormItem>
               )}
             />

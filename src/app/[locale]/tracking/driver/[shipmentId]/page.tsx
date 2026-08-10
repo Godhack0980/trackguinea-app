@@ -17,6 +17,9 @@ import {
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { ClientDetailsDialog } from '@/components/client-details-dialog';
+import DeliveryPod from '@/components/delivery-pod';
+import MissionChat from '@/components/mission-chat';
+import MissionRatings from '@/components/mission-ratings';
 
 interface Shipment {
   id: string;
@@ -64,6 +67,9 @@ export default function DriverTrackingPage() {
   const [incidentText, setIncidentText] = useState("");
   const [incidentPhoto, setIncidentPhoto] = useState<string | null>(null);
   const [submittingIncident, setSubmittingIncident] = useState(false);
+
+  // POD Modal state
+  const [showPodModal, setShowPodModal] = useState(false);
 
   // Refs
   const watchIdRef = useRef<number | null>(null);
@@ -190,6 +196,10 @@ export default function DriverTrackingPage() {
   // Update status in Firestore + notify client + browser push
   const updateStatus = async (newStatus: Shipment['status']) => {
     if (!shipment) return;
+    if (newStatus === 'livre') {
+      setShowPodModal(true);
+      return;
+    }
     try {
       await updateDoc(doc(db, 'shipments', shipmentId), {
         status: newStatus,
@@ -576,7 +586,7 @@ export default function DriverTrackingPage() {
               </Button>
             </div>
 
-            {/* Incident Trigger */}
+             {/* Incident Trigger */}
             <Button 
               variant="ghost" 
               onClick={() => setShowIncidentModal(true)}
@@ -588,6 +598,24 @@ export default function DriverTrackingPage() {
 
           </CardContent>
         </Card>
+
+        {/* Ratings Croisées module if delivered */}
+        {(shipment.status === 'livre' || shipment.status === 'arrive') && (
+          <MissionRatings 
+            shipmentId={shipment.id}
+            requestId={shipment.requestId}
+            clientId={shipment.clientId}
+            transporterId={shipment.transporterId}
+            userRole="transporter"
+            onReviewSubmitted={() => {}}
+          />
+        )}
+
+        {/* Mission chat box */}
+        <MissionChat 
+          shipmentId={shipment.id} 
+          missionNumber={`#TC-${shipment.id.substring(0, 8).toUpperCase()}`} 
+        />
 
       </div>
 
@@ -668,6 +696,17 @@ export default function DriverTrackingPage() {
           </Card>
         </div>
       )}
+
+      {/* Delivery POD Modal */}
+      <DeliveryPod 
+        shipmentId={shipmentId}
+        requestId={shipment.requestId}
+        isOpen={showPodModal}
+        onClose={() => setShowPodModal(false)}
+        onSuccess={() => {
+          // let Firestore snap update the view
+        }}
+      />
 
       {/* Footer Branding */}
       <div className="max-w-md mx-auto w-full text-center py-4 text-[10px] text-slate-600 font-semibold uppercase tracking-widest">

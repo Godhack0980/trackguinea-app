@@ -145,5 +145,20 @@
   "nav_docs": "Documentation",
   "nav_why": "Pourquoi nous",
   "nav_testimonials": "Témoignages",
-  "nav_contact": "Contact"
+  "nav_contact": "Contact",
+  "docs_hero_badge": "Centre d'Aide & Documentation Officielle",
+  "docs_hero_title": "Documentation Complète TransConnekt",
+  "docs_hero_desc": "Consultez le manuel d'utilisation officiel de la plateforme, découvrez les guides étape par étape et téléchargez les formats imprimables.",
+  "docs_btn_print": "Imprimer / PDF",
+  "docs_btn_download_html": "Télécharger HTML",
+  "docs_btn_download_md": "Télécharger Markdown (.MD)",
+  "docs_card1_title": "Guides Expéditeurs",
+  "docs_card1_desc": "Création de demandes, suivi des colis par GPS et validation de devis.",
+  "docs_card2_title": "Espace Transporteurs",
+  "docs_card2_desc": "Audit de conformité (250k GNF), commission de 2,5% et offres de fret.",
+  "docs_card3_title": "Tracking & API",
+  "docs_card3_desc": "Suivi GPS en temps réel sur les 33 préfectures de Guinée.",
+  "docs_viewer_title": "Manuel d'utilisation interactif v1.0",
+  "docs_btn_fullscreen": "Ouvrir plein écran",
+  "docs_btn_back": "Page Comment ça marche"
 }

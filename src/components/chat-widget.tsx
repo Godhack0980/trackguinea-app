@@ -12,6 +12,7 @@ import { MessageSquare, Send, X, Minimize2, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { requestNotificationPermission, sendBrowserNotification } from '@/lib/notifications';
 
 interface Message {
   id: string;
@@ -135,10 +136,13 @@ export default function ChatWidget() {
     }
   };
 
+  const isInitialLoadRef = useRef(true);
+
   // Open chat
   const handleOpen = async () => {
     setOpen(true);
     setMinimized(false);
+    requestNotificationPermission();
     if (!conversationId) {
       await initConversation();
     }
@@ -155,12 +159,32 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (!messagesQuery || !user) return;
+    isInitialLoadRef.current = true;
+
     const unsub = onSnapshot(messagesQuery, snap => {
       const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() } as Message));
       setMessages(msgs);
       // Count unread messages from admin
       const unread = msgs.filter(m => m.senderId !== user.uid && !m.isRead).length;
       setUnreadCount(unread);
+
+      // Check if new message added after initial load
+      if (!isInitialLoadRef.current) {
+        snap.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            if (data.senderId !== user.uid) {
+              sendBrowserNotification("Support TransConnekt", {
+                body: data.text || "Vous avez reçu un nouveau message.",
+                tag: "chat-message",
+              });
+            }
+          }
+        });
+      } else {
+        isInitialLoadRef.current = false;
+      }
+
       // Scroll to bottom
       setTimeout(() => {
         if (scrollRef.current) {
@@ -185,29 +209,6 @@ export default function ChatWidget() {
     };
     markRead();
   }, [open, conversationId, user, messages]);
-
-  // Request notification permission on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  // Push browser notification for incoming messages when chat is closed
-  useEffect(() => {
-    if (!messages.length || !user) return;
-    const last = messages[messages.length - 1];
-    if (last.senderId !== user.uid && (!open || minimized)) {
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('TransConnekt — Nouveau message', {
-          body: last.text,
-          icon: '/transconnekt-logo.png',
-          badge: '/transconnekt-logo.png',
-          tag: 'chat-message',
-        });
-      }
-    }
-  }, [messages, user, open, minimized]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !conversationId || !user) return;

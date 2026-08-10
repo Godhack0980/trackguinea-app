@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/auth-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Users2, Car, LineChart, Shield, Landmark, PieChart, Wrench, Clock, ClipboardList, ShieldCheck, Download } from "lucide-react";
+import { Loader2, Users2, Car, LineChart, Shield, Landmark, PieChart, Wrench, Clock, ClipboardList, ShieldCheck, Download, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -12,6 +12,7 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianG
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useTranslation } from "@/lib/translations";
+import TransconnektIntelligence from "@/components/transconnekt-intelligence";
 
 export default function TransporterCompanyDashboardPage() {
   const { user, userData, loadingAuth } = useAuth();
@@ -118,6 +119,68 @@ export default function TransporterCompanyDashboardPage() {
           <p className="text-sm text-muted-foreground mt-1">{t.trans_co_subtitle}</p>
         </div>
       </div>
+
+      <TransconnektIntelligence />
+
+      {/* DEMAND FORECASTING BANNER (Item 26) */}
+      <Card className="border-2 border-indigo-500/30 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 text-white rounded-3xl p-6 shadow-xl">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-indigo-500/20 pb-4 mb-4">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-2xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <TrendingUp className="w-6 h-6 text-indigo-400 animate-pulse" />
+            </span>
+            <div>
+              <h3 className="text-base font-black text-white flex items-center gap-2">
+                🔮 Moteur de Prévision de la Demande Fret (7–14 Jours)
+                <Badge className="bg-indigo-500 text-white font-bold text-[9px] uppercase">IA Prédictive</Badge>
+              </h3>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Anticipation des volumes de cargaison et recommandations de positionnement de flotte.
+              </p>
+            </div>
+          </div>
+          <Link href="/dashboard/corridors">
+            <Button variant="outline" className="border-indigo-500/40 text-indigo-200 hover:bg-indigo-500/20 text-xs font-bold rounded-xl h-9">
+              Explorer les Corridors →
+            </Button>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-indigo-500/20 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-slate-200">Conakry → Bamako</span>
+              <span className="font-black text-emerald-400 text-xs">+24% demande</span>
+            </div>
+            <p className="text-[11px] text-slate-400">18 transports anticipés cette semaine.</p>
+            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-300 font-semibold mt-2">
+              💡 <strong>Conseil Flotte :</strong> Positionnez 3 camions plateau à Conakry.
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-indigo-500/20 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-slate-200">Conakry → Dakar</span>
+              <span className="font-black text-emerald-400 text-xs">+18% demande</span>
+            </div>
+            <p className="text-[11px] text-slate-400">12 transports anticipés cette semaine.</p>
+            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-300 font-semibold mt-2">
+              💡 <strong>Conseil Flotte :</strong> 2 semi-remorques recommandés.
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-indigo-500/20 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-slate-200">Nzérékoré → Abidjan</span>
+              <span className="font-black text-emerald-400 text-xs">+12% demande</span>
+            </div>
+            <p className="text-[11px] text-slate-400">9 transports anticipés cette semaine.</p>
+            <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[10px] text-indigo-300 font-semibold mt-2">
+              💡 <strong>Conseil Flotte :</strong> Demande stable fret agricole.
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-3">

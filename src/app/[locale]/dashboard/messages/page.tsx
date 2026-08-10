@@ -14,6 +14,7 @@ import { Loader2, Send, Paperclip, X, FileText, Image, Bot, Download, ExternalLi
 import { formatDistanceToNow } from 'date-fns';
 import { fr, enUS } from 'date-fns/locale';
 import { useTranslation } from '@/lib/translations';
+import { requestNotificationPermission, sendBrowserNotification } from '@/lib/notifications';
 
 interface Message {
   id: string;
@@ -144,11 +145,36 @@ export default function UserMessagesPage() {
     );
   }, [conversationId]);
 
+  const isInitialLoadRef = useRef(true);
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
   useEffect(() => {
     if (!messagesQuery || !user) return;
+    isInitialLoadRef.current = true;
+
     const unsub = onSnapshot(messagesQuery, snap => {
       const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() } as Message));
       setMessages(msgs);
+
+      if (!isInitialLoadRef.current) {
+        snap.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            if (data.senderId !== user.uid) {
+              sendBrowserNotification("Support TransConnekt", {
+                body: data.text || "Vous avez reçu un nouveau message.",
+                tag: 'user-message',
+              });
+            }
+          }
+        });
+      } else {
+        isInitialLoadRef.current = false;
+      }
+
       setTimeout(() => {
         if (scrollRef.current) {
           scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

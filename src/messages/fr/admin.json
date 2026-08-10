@@ -1,1 +1,11 @@
-{}
+{
+  "intel_title": "TransConnekt Intelligence",
+  "intel_subtitle": "Analyses prédictives et aide à la décision en temps réel.",
+  "intel_active_badge": "Moteur IA Actif",
+  "intel_attention": "Attention",
+  "intel_alert": "Alerte",
+  "intel_saving": "Économie",
+  "intel_tracking": "Suivi",
+  "intel_compliance": "Conformité",
+  "intel_opportunity": "Opportunité"
+}

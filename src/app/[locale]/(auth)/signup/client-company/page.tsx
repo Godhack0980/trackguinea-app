@@ -28,6 +28,10 @@ import { Building, ArrowRight, Loader2 } from "lucide-react"
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 
+import { Checkbox } from "@/components/ui/checkbox"
+import PasswordRequirements from "@/components/password-requirements";
+import { getFirebaseAuthErrorMessage } from "@/lib/firebase-auth-errors";
+
 const prefecturesGuinea = [
   "Conakry", "Beyla", "Boffa", "Boké", "Coyah", "Dabola", "Dalaba", "Dinguiraye", 
   "Dubréka", "Faranah", "Forécariah", "Fria", "Gaoual", "Guéckédou", "Kankan", 
@@ -47,7 +51,16 @@ const formSchema = z.object({
   contactLastName: z.string().min(1, { message: "Le nom du contact est requis." }),
   email: z.string().email({ message: "Adresse e-mail invalide." }),
   phone: z.string().min(1, { message: "Le téléphone est requis." }),
-  password: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." }),
+  password: z
+    .string()
+    .min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." })
+    .regex(/[A-Z]/, { message: "Au moins une lettre majuscule est requise." })
+    .regex(/[a-z]/, { message: "Au moins une lettre minuscule est requise." })
+    .regex(/[0-9]/, { message: "Au moins un chiffre est requis." })
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, { message: "Au moins un caractère spécial est requis." }),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "Veuillez accepter les CGU et politique de confidentialité.",
+  }),
 })
 
 export default function ClientCompanySignupPage() {
@@ -69,6 +82,7 @@ export default function ClientCompanySignupPage() {
       email: "",
       phone: "",
       password: "",
+      acceptTerms: false,
     },
   })
 
@@ -93,7 +107,7 @@ export default function ClientCompanySignupPage() {
         estimatedVolume: values.estimatedVolume,
         headquartersPrefecture: values.headquartersPrefecture,
         role: 'client-company',
-        companyId: user.uid, 
+        companyId: uniqueId,
         companyRole: 'admin', 
         isVerified: false, 
         uniqueId: uniqueId,
@@ -101,20 +115,15 @@ export default function ClientCompanySignupPage() {
       });
       
       toast({
-        title: "Bienvenue !",
-        description: "Votre compte entreprise a été créé avec succès.",
+        title: "Compte Entreprise créé !",
+        description: "Votre compte a été créé. Notre équipe va valider vos informations professionnelles sous 24h.",
       });
       
       router.push(`/dashboard/client-company`);
 
     } catch (error: any) {
       console.error("Error signing up company:", error);
-      
-      let description = "Une erreur est survenue. Veuillez réessayer.";
-      if (error.code === 'auth/email-already-in-use') {
-        description = "Cette adresse e-mail est déjà utilisée par un autre compte.";
-      }
-
+      const description = getFirebaseAuthErrorMessage(error);
       toast({
         variant: "destructive",
         title: "Erreur lors de l'inscription",
@@ -128,8 +137,15 @@ export default function ClientCompanySignupPage() {
   return (
     <Card className="bg-slate-900/60 border border-slate-800 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden">
       <CardHeader className="pb-4">
-        <CardTitle className="font-headline text-2xl text-white">Inscription Entreprise Cliente (Pro)</CardTitle>
-        <CardDescription className="text-slate-400">Créez votre compte professionnel pour gérer vos transports de fret.</CardDescription>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+            <Building className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <CardTitle className="font-headline text-2xl text-white">Inscription Entreprise Cliente</CardTitle>
+            <CardDescription className="text-slate-400">Pour les sociétés ayant des besoins logistiques réguliers.</CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -142,7 +158,7 @@ export default function ClientCompanySignupPage() {
                   <FormItem>
                     <FormLabel className="text-slate-200 font-semibold text-xs">Nom de l'entreprise</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Global Corp" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
+                      <Input placeholder="Soguipah SA" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage className="text-red-400 text-xs" />
                   </FormItem>
@@ -153,9 +169,9 @@ export default function ClientCompanySignupPage() {
                 name="rccm"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-200 font-semibold text-xs">Numéro de RCCM</FormLabel>
+                    <FormLabel className="text-slate-200 font-semibold text-xs">N° RCCM (Registre du Commerce)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Registre de Commerce" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
+                      <Input placeholder="GN.CKY.202X.B.XXXX" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
                     </FormControl>
                     <FormMessage className="text-red-400 text-xs" />
                   </FormItem>
@@ -169,19 +185,19 @@ export default function ClientCompanySignupPage() {
                 name="sector"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-200 font-semibold text-xs">Secteur</FormLabel>
+                    <FormLabel className="text-slate-200 font-semibold text-xs">Secteur d'activité</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-[#0D1322] border-slate-800 text-slate-100 rounded-xl h-11">
-                          <SelectValue placeholder="Secteur" />
+                          <SelectValue placeholder="Choisir" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-[#0D1322] border-slate-800 text-slate-100 rounded-xl">
-                        <SelectItem value="Import-Export" className="focus:bg-slate-800 focus:text-white cursor-pointer">Import-Export</SelectItem>
-                        <SelectItem value="Mines/Energie" className="focus:bg-slate-800 focus:text-white cursor-pointer">Mines & Énergie</SelectItem>
-                        <SelectItem value="Construction/BTP" className="focus:bg-slate-800 focus:text-white cursor-pointer">Construction / BTP</SelectItem>
-                        <SelectItem value="Commerce/Distribution" className="focus:bg-slate-800 focus:text-white cursor-pointer">Commerce / Distribution</SelectItem>
-                        <SelectItem value="Agriculture" className="focus:bg-slate-800 focus:text-white cursor-pointer">Agriculture</SelectItem>
+                        <SelectItem value="Agroalimentaire" className="focus:bg-slate-800 focus:text-white cursor-pointer">Agroalimentaire 🌾</SelectItem>
+                        <SelectItem value="Mines" className="focus:bg-slate-800 focus:text-white cursor-pointer">Mines & Énergie 💎</SelectItem>
+                        <SelectItem value="Construction" className="focus:bg-slate-800 focus:text-white cursor-pointer">BTP & Construction 🏗️</SelectItem>
+                        <SelectItem value="Commerce" className="focus:bg-slate-800 focus:text-white cursor-pointer">Commerce de gros 🛍️</SelectItem>
+                        <SelectItem value="Autre" className="focus:bg-slate-800 focus:text-white cursor-pointer">Autre secteur 🏢</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-red-400 text-xs" />
@@ -193,18 +209,17 @@ export default function ClientCompanySignupPage() {
                 name="estimatedVolume"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-200 font-semibold text-xs">Volume Mensuel</FormLabel>
+                    <FormLabel className="text-slate-200 font-semibold text-xs">Volume de fret mensuel</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-[#0D1322] border-slate-800 text-slate-100 rounded-xl h-11">
-                          <SelectValue placeholder="Volume" />
+                          <SelectValue placeholder="Choisir" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-[#0D1322] border-slate-800 text-slate-100 rounded-xl">
-                        <SelectItem value="< 5t" className="focus:bg-slate-800 focus:text-white cursor-pointer">&lt; 5 tonnes</SelectItem>
-                        <SelectItem value="5t-20t" className="focus:bg-slate-800 focus:text-white cursor-pointer">5 - 20 tonnes</SelectItem>
-                        <SelectItem value="20t-100t" className="focus:bg-slate-800 focus:text-white cursor-pointer">20 - 100 tonnes</SelectItem>
-                        <SelectItem value="> 100t" className="focus:bg-slate-800 focus:text-white cursor-pointer">&gt; 100 tonnes</SelectItem>
+                        <SelectItem value="Moins de 5 tonnes" className="focus:bg-slate-800 focus:text-white cursor-pointer">{"< 5 Tonnes 📦"}</SelectItem>
+                        <SelectItem value="5 à 20 tonnes" className="focus:bg-slate-800 focus:text-white cursor-pointer">5 à 20 Tonnes 🚛</SelectItem>
+                        <SelectItem value="Plus de 20 tonnes" className="focus:bg-slate-800 focus:text-white cursor-pointer">{"> 20 Tonnes 🚢"}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage className="text-red-400 text-xs" />
@@ -216,11 +231,11 @@ export default function ClientCompanySignupPage() {
                 name="headquartersPrefecture"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-200 font-semibold text-xs">Siège Social</FormLabel>
+                    <FormLabel className="text-slate-200 font-semibold text-xs">Préfecture du Siège</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-[#0D1322] border-slate-800 text-slate-100 rounded-xl h-11">
-                          <SelectValue placeholder="Siège" />
+                          <SelectValue placeholder="Choisir" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-[#0D1322] border-slate-800 text-slate-100 rounded-xl max-h-56">
@@ -316,7 +331,37 @@ export default function ClientCompanySignupPage() {
                   <FormControl>
                     <PasswordInput placeholder="********" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
                   </FormControl>
+                  <PasswordRequirements password={field.value} />
                   <FormMessage className="text-red-400 text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="acceptTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="bg-[#0D1322] border-slate-800 text-white data-[state=checked]:bg-primary mt-0.5"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none text-left">
+                    <FormLabel className="text-slate-300 text-xs cursor-pointer select-none">
+                      J'accepte les{" "}
+                      <Link href="/terms" className="text-primary hover:underline font-semibold" target="_blank">
+                        Conditions Générales d'Utilisation (CGU)
+                      </Link>{" "}
+                      et la{" "}
+                      <Link href="/privacy" className="text-primary hover:underline font-semibold" target="_blank">
+                        Politique de Confidentialité
+                      </Link>
+                    </FormLabel>
+                    <FormMessage className="text-red-400 text-[11px]" />
+                  </div>
                 </FormItem>
               )}
             />

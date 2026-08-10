@@ -19,6 +19,7 @@ import { createNotification } from "@/lib/notifications"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
+import TransconnektIntelligence from "@/components/transconnekt-intelligence";
 
 const getRequestIcon = (nature: string) => {
     const isMining = nature.toLowerCase().includes('mine') || nature.toLowerCase().includes('simandou') || nature.toLowerCase().includes('ciment') || nature.toLowerCase().includes('fer');
@@ -186,6 +187,8 @@ export default function TransporterDashboard() {
           Profil Vérifié
         </Badge>
       </div>
+
+      <TransconnektIntelligence />
 
       {/* Metrics Cards */}
       <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-4">

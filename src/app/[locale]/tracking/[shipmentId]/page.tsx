@@ -13,14 +13,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   MapPin, AlertTriangle, CheckCircle2, Clock, Phone, 
-  User, Truck, Loader2, ArrowLeft, ShieldCheck, Mail, Share2, Copy, MessageSquare, Search, Key, Sparkles, Navigation, Info
+  User, Truck, Loader2, ArrowLeft, ShieldCheck, Mail, Share2, Copy, MessageSquare, Search, Key, Sparkles, Navigation, Info, Printer
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import MissionChat from '@/components/mission-chat';
+import MissionRatings from '@/components/mission-ratings';
 
 // Set Mapbox access token
-mapboxgl.accessToken = 'process.env.NEXT_PUBLIC_MAPBOX_TOKEN!';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 interface Shipment {
   id: string;
@@ -51,6 +53,17 @@ interface Shipment {
     timestamp: number;
   } | null;
   otpCode?: string;
+  pod?: {
+    recipientName: string;
+    remarks: string;
+    photoUrl: string;
+    signatureUrl: string;
+    lat: number;
+    lng: number;
+    timestamp: number;
+  } | null;
+  clientReviewed?: boolean;
+  transporterReviewed?: boolean;
 }
 
 interface TransporterDetails {
@@ -149,6 +162,77 @@ export default function ClientTrackingPage() {
 
     return () => unsub();
   }, [shipmentId]);
+
+  const handlePrintPOD = (pod: any) => {
+    const dateStr = new Date(pod.timestamp).toLocaleString('fr-FR');
+    const photoHtml = pod.photoUrl 
+      ? `<div class="section">
+           <div class="section-title">Photo de livraison</div>
+           <div class="photo-box">
+             <img src="${pod.photoUrl}" alt="Photo de livraison" />
+           </div>
+         </div>`
+      : '';
+
+    const printContent = `
+      <html>
+        <head>
+          <title>POD_${shipmentId.substring(0, 8).toUpperCase()}</title>
+          <style>
+            body { font-family: 'Segoe UI', sans-serif; color: #1e293b; padding: 40px; }
+            .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; }
+            .title { font-size: 22px; font-weight: 800; color: #10b981; }
+            .meta { font-size: 13px; color: #64748b; line-height: 1.6; margin-top: 5px; }
+            .section { margin-bottom: 30px; }
+            .section-title { font-size: 14px; font-weight: 700; color: #0f172a; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 5px; }
+            .grid { display: flex; justify-content: space-between; }
+            .col { width: 48%; font-size: 13px; line-height: 1.6; }
+            .photo-box { max-height: 250px; border-radius: 8px; overflow: hidden; margin-top: 10px; border: 1px solid #e2e8f0; }
+            .photo-box img { max-height: 240px; max-width: 100%; object-fit: contain; }
+            .signature-box { height: 120px; width: 280px; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8fafc; margin-top: 5px; }
+            .signature-box img { max-height: 110px; max-width: 100%; object-fit: contain; }
+            .footer { margin-top: 50px; font-size: 11px; text-align: center; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="title">PREUVE DE LIVRAISON NUMÉRIQUE (POD)</div>
+            <div class="meta">
+              <strong>ID Transport :</strong> ${shipmentId.toUpperCase()}<br/>
+              <strong>Mission :</strong> ${shipment?.from} &rarr; ${shipment?.to} (${shipment?.nature})<br/>
+              <strong>Date & Heure :</strong> ${dateStr}
+            </div>
+          </div>
+          <div class="section grid">
+            <div class="col">
+              <div class="section-title">Destinataire & Réception</div>
+              <strong>Réceptionnaire :</strong> ${pod.recipientName}<br/>
+              <strong>Coordonnées GPS :</strong> Lat ${pod.lat.toFixed(5)}, Lng ${pod.lng.toFixed(5)}<br/>
+              <strong>Remarques :</strong> ${pod.remarks || "Aucune observation particulière."}
+            </div>
+            <div class="col">
+              <div class="section-title">Signature de livraison</div>
+              <div class="signature-box">
+                <img src="${pod.signatureUrl}" alt="Signature" />
+              </div>
+            </div>
+          </div>
+          ${photoHtml}
+          <div class="footer">
+            Document généré électroniquement par TransConnekt. Fait foi de réception de marchandises.
+          </div>
+          <script>
+            window.onload = function() { window.print(); }
+          </script>
+        </body>
+      </html>
+    `;
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
+  };
 
   // Mapbox initialization
   useEffect(() => {
@@ -612,6 +696,88 @@ export default function ClientTrackingPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Digital Proof of Delivery receipt if delivered */}
+            {shipment.pod && (
+              <Card className="border-emerald-500/20 bg-emerald-500/5 rounded-2xl overflow-hidden shadow-md">
+                <CardHeader className="pb-2 bg-emerald-500/10 border-b border-emerald-500/10 p-4 flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xs font-extrabold uppercase tracking-wider text-emerald-400">
+                      Preuve de livraison (POD)
+                    </CardTitle>
+                    <CardDescription className="text-[10px] text-emerald-500/70">
+                      Livraison signée électroniquement le {new Date(shipment.pod.timestamp).toLocaleDateString('fr-FR')}
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => handlePrintPOD(shipment.pod)}
+                    className="h-8 rounded-xl text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 border-0 shrink-0"
+                  >
+                    <Printer size={12} /> POD PDF
+                  </Button>
+                </CardHeader>
+                <CardContent className="p-4 space-y-3 text-xs">
+                  <div className="grid grid-cols-2 gap-2 text-[11px] border-b border-emerald-500/10 pb-3">
+                    <div>
+                      <p className="text-[9px] uppercase text-emerald-500/60 font-extrabold">Réceptionnaire</p>
+                      <p className="font-bold text-slate-100">{shipment.pod.recipientName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase text-emerald-500/60 font-extrabold">Position GPS</p>
+                      <p className="font-bold text-slate-100 font-mono text-[10px]">
+                        Lat {shipment.pod.lat.toFixed(5)}, Lng {shipment.pod.lng.toFixed(5)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {shipment.pod.remarks && (
+                    <div className="text-[11px] border-b border-emerald-500/10 pb-3">
+                      <p className="text-[9px] uppercase text-emerald-500/60 font-extrabold">Observations</p>
+                      <p className="italic text-slate-300">&ldquo;{shipment.pod.remarks}&rdquo;</p>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3 pt-1">
+                    {shipment.pod.photoUrl && (
+                      <div>
+                        <p className="text-[9px] uppercase text-emerald-500/60 font-extrabold mb-1">Photo de livraison</p>
+                        <img 
+                          src={shipment.pod.photoUrl} 
+                          alt="POD" 
+                          className="h-20 w-full object-cover rounded-xl border border-emerald-500/20 cursor-pointer" 
+                          onClick={() => window.open(shipment.pod!.photoUrl, '_blank')}
+                        />
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-[9px] uppercase text-emerald-500/60 font-extrabold mb-1">Signature destinataire</p>
+                      <div className="h-20 w-full bg-white flex items-center justify-center rounded-xl p-1 border border-emerald-500/20">
+                        <img src={shipment.pod.signatureUrl} alt="Signature" className="max-h-full max-w-full object-contain" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Ratings Croisées module if delivered */}
+            {(shipment.status === 'livre' || shipment.status === 'arrive' || shipment.pod) && (
+              <MissionRatings 
+                shipmentId={shipment.id}
+                requestId={shipment.requestId}
+                clientId={shipment.clientId}
+                transporterId={shipment.transporterId}
+                userRole="client"
+                onReviewSubmitted={() => {}}
+              />
+            )}
+
+            {/* Mission chat box */}
+            <MissionChat 
+              shipmentId={shipment.id} 
+              missionNumber={`#TC-${shipment.id.substring(0, 8).toUpperCase()}`} 
+            />
 
           </div>
 

@@ -9,51 +9,79 @@ import {
   query,
   where,
 } from 'firebase/firestore';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import AdminMap from '@/components/admin-map';
+import dynamic from 'next/dynamic';
 import { Loader2, Globe } from 'lucide-react';
+
+const AdminMap = dynamic(() => import('@/components/admin-map'), { 
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col items-center justify-center h-[560px] bg-slate-950 text-white rounded-3xl space-y-3">
+      <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+      <span className="text-xs font-semibold text-slate-400">Chargement de la Carte Logistique...</span>
+    </div>
+  )
+});
 
 const AdminGlobalTrackingPage = () => {
   const activeJobsQuery = React.useMemo(() => {
-    return query(
-        collection(db, 'requests'), 
-        where('status', '==', 'En cours')
-    );
+    return query(collection(db, 'requests'));
   }, []);
 
-  const [activeJobsSnapshot, loading, error] = useCollection(activeJobsQuery);
+  const usersQuery = React.useMemo(() => {
+    return query(collection(db, 'users'));
+  }, []);
+
+  const agenciesQuery = React.useMemo(() => {
+    return query(collection(db, 'agencies'));
+  }, []);
+
+  const corridorsQuery = React.useMemo(() => {
+    return query(collection(db, 'corridors'));
+  }, []);
+
+  const [activeJobsSnapshot, loadingJobs] = useCollection(activeJobsQuery);
+  const [usersSnapshot] = useCollection(usersQuery);
+  const [agenciesSnapshot] = useCollection(agenciesQuery);
+  const [corridorsSnapshot] = useCollection(corridorsQuery);
 
   const activeJobs = React.useMemo(() => {
     if (!activeJobsSnapshot) return [];
-    return activeJobsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    })) as any[];
+    return activeJobsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }, [activeJobsSnapshot]);
 
-  if (error) {
-    console.error("Erreur de chargement des courses:", error);
-    return <p className="text-destructive text-center">Erreur: impossible de charger les courses en cours.</p>
-  }
+  const usersList = React.useMemo(() => {
+    if (!usersSnapshot) return [];
+    return usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }, [usersSnapshot]);
+
+  const agenciesList = React.useMemo(() => {
+    if (!agenciesSnapshot) return [];
+    return agenciesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }, [agenciesSnapshot]);
+
+  const corridorsList = React.useMemo(() => {
+    if (!corridorsSnapshot) return [];
+    return corridorsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }, [corridorsSnapshot]);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-primary flex items-center gap-2"><Globe/> Suivi Global des Courses</h1>
-     <Card className="shadow-md rounded-2xl border-border">
-        <CardHeader>
-          <CardTitle className="text-lg text-accent">Carte en direct</CardTitle>
-          <CardDescription>Visualisez en temps réel la position de toutes les courses actuellement en cours sur la plateforme.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {loading ? (
-                <div className="flex justify-center items-center h-[500px]">
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-            ) : (
-                <AdminMap activeJobs={activeJobs} />
-            )}
-        </CardContent>
-      </Card>
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+        <Globe className="text-indigo-500" /> Suivi Global & Carte Logistique
+      </h1>
+
+      {loadingJobs ? (
+        <div className="flex justify-center items-center h-[500px]">
+          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        </div>
+      ) : (
+        <AdminMap 
+          activeJobs={activeJobs as any[]}
+          usersList={usersList}
+          agenciesList={agenciesList}
+          corridorsList={corridorsList}
+        />
+      )}
     </div>
   );
 };

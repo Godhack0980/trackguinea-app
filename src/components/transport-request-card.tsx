@@ -31,12 +31,17 @@ import { formatDurationFromSeconds } from "@/lib/utils";
 import type { TransportRequest } from "@/ai/types";
 import { createNotification } from "@/lib/notifications";
 import { initiateEscrowPayment } from "@/lib/payments";
+import OfferComparator from "@/components/offer-comparator";
 
 interface ApplicantProfile {
     id: string;
     firstName: string;
     lastName: string;
     rating: number;
+    companyName?: string;
+    completedJobs?: number;
+    totalJobs?: number;
+    vehicleType?: string;
 }
 
 interface TransportRequestCardProps {
@@ -398,16 +403,31 @@ export default function TransportRequestCard({ request, onAssign, onCancellation
                                     {lang === 'fr' ? `Voir les postulants (${request.applicants?.length || 0})` : `View applicants (${request.applicants?.length || 0})`}
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px] rounded-3xl">
+                            <DialogContent className="sm:max-w-[700px] rounded-3xl">
                                 <DialogHeader>
                                     <DialogTitle className="text-lg font-bold">{lang === 'fr' ? "Choisir un transporteur" : "Choose a transporter"}</DialogTitle>
                                     <DialogDescription>
-                                        {lang === 'fr' ? "Sélectionnez le transporteur pour votre course." : "Select the transporter for your trip."}
+                                        {lang === 'fr' ? "Comparez et sélectionnez le meilleur transporteur pour votre course." : "Compare and select the best transporter for your trip."}
                                     </DialogDescription>
                                 </DialogHeader>
-                                <div className="space-y-3 py-4 max-h-[60vh] overflow-y-auto pr-1">
+                                <div className="space-y-3 py-4 max-h-[70vh] overflow-y-auto pr-1">
                                     {loadingApplicants ? <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" /> :
-                                     applicants.length > 0 ? applicants.map(applicant => (
+                                     applicants.length >= 2 ? (
+                                        <OfferComparator
+                                          bids={applicants.map(a => ({
+                                            id: a.id,
+                                            transporterName: a.companyName || `${a.firstName} ${a.lastName}`,
+                                            transporterId: a.id,
+                                            amount: request.price || 0,
+                                            rating: a.rating,
+                                            completedJobs: a.completedJobs,
+                                            totalJobs: a.totalJobs,
+                                            vehicleType: a.vehicleType,
+                                            status: "En attente",
+                                          }))}
+                                          onSelectBid={(bidId, transporterId) => handleAssignTransporter(transporterId)}
+                                        />
+                                     ) : applicants.length > 0 ? applicants.map(applicant => (
                                              <div key={applicant.id} className="flex items-center justify-between p-3 rounded-2xl border border-border/60 bg-muted/10 hover:bg-muted/20 transition-all duration-300">
                                                  <div className="flex items-center gap-3">
                                                      <Avatar className="h-9 w-9">

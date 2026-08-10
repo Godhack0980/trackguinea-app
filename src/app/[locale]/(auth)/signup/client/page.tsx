@@ -27,6 +27,10 @@ import { useToast } from "@/hooks/use-toast"
 import { ArrowRight, Loader2 } from "lucide-react"
 import { useState } from "react"
 
+import { Checkbox } from "@/components/ui/checkbox"
+import PasswordRequirements, { isPasswordValid } from "@/components/password-requirements";
+import { getFirebaseAuthErrorMessage } from "@/lib/firebase-auth-errors";
+
 const prefecturesGuinea = [
   "Conakry", "Beyla", "Boffa", "Boké", "Coyah", "Dabola", "Dalaba", "Dinguiraye", 
   "Dubréka", "Faranah", "Forécariah", "Fria", "Gaoual", "Guéckédou", "Kankan", 
@@ -42,7 +46,16 @@ const formSchema = z.object({
   phone: z.string().min(1, { message: "Le téléphone est requis." }),
   residencePrefecture: z.string().min(1, { message: "La préfecture est requise." }),
   frequentShipment: z.string().min(1, { message: "Veuillez indiquer le type d'envoi." }),
-  password: z.string().min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." }),
+  password: z
+    .string()
+    .min(8, { message: "Le mot de passe doit contenir au moins 8 caractères." })
+    .regex(/[A-Z]/, { message: "Au moins une lettre majuscule est requise." })
+    .regex(/[a-z]/, { message: "Au moins une lettre minuscule est requise." })
+    .regex(/[0-9]/, { message: "Au moins un chiffre est requis." })
+    .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, { message: "Au moins un caractère spécial est requis." }),
+  acceptTerms: z.boolean().refine(val => val === true, {
+    message: "Veuillez accepter les CGU et politique de confidentialité.",
+  }),
 })
 
 export default function ClientSignupPage() {
@@ -60,6 +73,7 @@ export default function ClientSignupPage() {
       residencePrefecture: "",
       frequentShipment: "",
       password: "",
+      acceptTerms: false,
     },
   })
 
@@ -117,10 +131,7 @@ export default function ClientSignupPage() {
     } catch (error: any) {
       console.error("Error signing up:", error);
       
-      let description = "Une erreur est survenue. Veuillez réessayer.";
-      if (error.code === 'auth/email-already-in-use') {
-        description = "Cette adresse e-mail est déjà utilisée par un autre compte.";
-      }
+      const description = getFirebaseAuthErrorMessage(error);
 
       toast({
         variant: "destructive",
@@ -256,7 +267,37 @@ export default function ClientSignupPage() {
                   <FormControl>
                     <PasswordInput placeholder="********" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
                   </FormControl>
+                  <PasswordRequirements password={field.value} />
                   <FormMessage className="text-red-400 text-xs" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="acceptTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md p-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      className="bg-[#0D1322] border-slate-800 text-white data-[state=checked]:bg-primary mt-0.5"
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none text-left">
+                    <FormLabel className="text-slate-300 text-xs cursor-pointer select-none">
+                      J'accepte les{" "}
+                      <Link href="/terms" className="text-primary hover:underline font-semibold" target="_blank">
+                        Conditions Générales d'Utilisation (CGU)
+                      </Link>{" "}
+                      et la{" "}
+                      <Link href="/privacy" className="text-primary hover:underline font-semibold" target="_blank">
+                        Politique de Confidentialité
+                      </Link>
+                    </FormLabel>
+                    <FormMessage className="text-red-400 text-[11px]" />
+                  </div>
                 </FormItem>
               )}
             />

@@ -40,23 +40,27 @@ export default function RoleSwitcher({ currentRole, onRoleChange }: RoleSwitcher
 
 
   return (
-    <div className="p-2">
+    <div className="p-1">
       <Select value={currentRole} onValueChange={onRoleChange}>
-        <SelectTrigger>
-            <div className="flex items-center">
-                {roleConfig[currentRole].icon}
-                <SelectValue placeholder={getRoleLabel(currentRole)} />
-            </div>
+        <SelectTrigger className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 focus:ring-0 focus:ring-offset-0">
+          <div className="flex items-center text-white">
+            {roleConfig[currentRole].icon}
+            <SelectValue placeholder={getRoleLabel(currentRole)} />
+          </div>
         </SelectTrigger>
-        <SelectContent>
-            {Object.entries(roleConfig).map(([role, {label, icon}]) => (
-                 <SelectItem key={role} value={role}>
-                    <div className="flex items-center">
-                        {icon}
-                        <span>{label}</span>
-                    </div>
-                </SelectItem>
-            ))}
+        <SelectContent className="bg-[#1b1f2e] border-white/10 text-white">
+          {Object.entries(roleConfig).map(([role, {label, icon}]) => (
+            <SelectItem 
+              key={role} 
+              value={role} 
+              className="text-white/80 focus:bg-white/10 focus:text-white cursor-pointer hover:bg-white/5"
+            >
+              <div className="flex items-center text-white">
+                {icon}
+                <span>{label}</span>
+              </div>
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>

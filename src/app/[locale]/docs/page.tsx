@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import SharedHeader from "@/components/shared-header";
 import SharedFooter from "@/components/shared-footer";
-import { BookOpen, Download, Printer, ExternalLink, ArrowLeft, ShieldCheck, FileText, CheckCircle2, Search, HelpCircle } from "lucide-react";
+import { BookOpen, Download, Printer, ExternalLink, ArrowLeft, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/translations";
 
 export default function PublicDocumentationPage() {
-  const [activeTab, setActiveTab] = useState<'interactive' | 'download'>('interactive');
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground font-sans">
@@ -19,13 +20,13 @@ export default function PublicDocumentationPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/10 blur-[130px] rounded-full pointer-events-none" />
         <div className="container px-4 mx-auto relative z-10 max-w-4xl text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-bold uppercase tracking-wider">
-            <BookOpen size={14} /> Centre d'Aide & Documentation Officielle
+            <BookOpen size={14} /> {t("docs_hero_badge") || "Centre d'Aide & Documentation Officielle"}
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
-            Documentation Complète TransConnekt
+            {t("docs_hero_title") || "Documentation Complète TransConnekt"}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Consultez le manuel d'utilisation officiel de la plateforme, découvrez les guides étape par étape et téléchargez les formats imprimables.
+            {t("docs_hero_desc") || "Consultez le manuel d'utilisation officiel de la plateforme, découvrez les guides étape par étape et téléchargez les formats imprimables."}
           </p>
 
           {/* Quick Action Buttons */}
@@ -35,14 +36,14 @@ export default function PublicDocumentationPage() {
               variant="outline"
               className="rounded-2xl border-border/60 bg-card/60 hover:bg-muted font-bold text-xs gap-2"
             >
-              <Printer size={16} className="text-indigo-400" /> Imprimer / PDF
+              <Printer size={16} className="text-indigo-400" /> {t("docs_btn_print") || "Imprimer / PDF"}
             </Button>
             <Button
               asChild
               className="rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs gap-2 shadow-lg shadow-indigo-600/20"
             >
               <a href="/docs/transconnekt_documentation.html" target="_blank" download>
-                <Download size={16} /> Télécharger HTML
+                <Download size={16} /> {t("docs_btn_download_html") || "Télécharger HTML"}
               </a>
             </Button>
             <Button
@@ -51,7 +52,7 @@ export default function PublicDocumentationPage() {
               className="rounded-2xl border-border/60 bg-card/60 hover:bg-muted font-bold text-xs gap-2"
             >
               <a href="/docs/transconnekt_documentation.md" download>
-                <FileText size={16} className="text-emerald-400" /> Télécharger Markdown (.MD)
+                <FileText size={16} className="text-emerald-400" /> {t("docs_btn_download_md") || "Télécharger Markdown (.MD)"}
               </a>
             </Button>
           </div>
@@ -67,9 +68,9 @@ export default function PublicDocumentationPage() {
             <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold">
               1
             </div>
-            <h3 className="font-bold text-sm text-foreground">Guides Expéditeurs</h3>
+            <h3 className="font-bold text-sm text-foreground">{t("docs_card1_title") || "Guides Expéditeurs"}</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Création de demandes, suivi des colis par GPS et validation de devis.
+              {t("docs_card1_desc") || "Création de demandes, suivi des colis par GPS et validation de devis."}
             </p>
           </div>
 
@@ -77,9 +78,9 @@ export default function PublicDocumentationPage() {
             <div className="h-10 w-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
               2
             </div>
-            <h3 className="font-bold text-sm text-foreground">Espace Transporteurs</h3>
+            <h3 className="font-bold text-sm text-foreground">{t("docs_card2_title") || "Espace Transporteurs"}</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Audit de conformité (250k GNF), commission de 2,5% et offres de fret.
+              {t("docs_card2_desc") || "Audit de conformité (250k GNF), commission de 2,5% et offres de fret."}
             </p>
           </div>
 
@@ -87,9 +88,9 @@ export default function PublicDocumentationPage() {
             <div className="h-10 w-10 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center font-bold">
               3
             </div>
-            <h3 className="font-bold text-sm text-foreground">Tracking & API</h3>
+            <h3 className="font-bold text-sm text-foreground">{t("docs_card3_title") || "Tracking & API"}</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Suivi GPS en temps réel sur les 33 préfectures de Guinée.
+              {t("docs_card3_desc") || "Suivi GPS en temps réel sur les 33 préfectures de Guinée."}
             </p>
           </div>
         </div>
@@ -101,14 +102,14 @@ export default function PublicDocumentationPage() {
               <span className="h-3 w-3 rounded-full bg-rose-500" />
               <span className="h-3 w-3 rounded-full bg-amber-500" />
               <span className="h-3 w-3 rounded-full bg-emerald-500" />
-              <span className="text-xs font-bold text-muted-foreground ml-2">Manuel d'utilisation interactif v1.0</span>
+              <span className="text-xs font-bold text-muted-foreground ml-2">{t("docs_viewer_title") || "Manuel d'utilisation interactif v1.0"}</span>
             </div>
             <a
               href="/docs/transconnekt_documentation.html"
               target="_blank"
               className="text-xs text-indigo-400 font-bold hover:underline inline-flex items-center gap-1"
             >
-              Ouvrir plein écran <ExternalLink size={14} />
+              {t("docs_btn_fullscreen") || "Ouvrir plein écran"} <ExternalLink size={14} />
             </a>
           </div>
           <iframe
@@ -124,7 +125,7 @@ export default function PublicDocumentationPage() {
             href="/how-it-works"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-card hover:bg-muted border border-border/60 text-foreground font-semibold text-sm transition-all shadow-md"
           >
-            <ArrowLeft size={16} /> Page Comment ça marche
+            <ArrowLeft size={16} /> {t("docs_btn_back") || "Page Comment ça marche"}
           </Link>
         </div>
 

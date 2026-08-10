@@ -36,6 +36,21 @@ export default function ServicesPage() {
       <SharedHeader />
       <main className="flex-1">
         {/* Hero banner with background video */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "VideoObject",
+              "name": "TransConnekt — Solution de Transport et Logistique en Guinée et Afrique",
+              "description": "Vidéo de présentation de la flotte de camions et de la plateforme TransConnekt, première société de transport routier de marchandises en Guinée.",
+              "thumbnailUrl": ["https://transconnekt.com/transconnekt-logo.png"],
+              "uploadDate": "2025-01-01T08:00:00+00:00",
+              "contentUrl": "https://firebasestorage.googleapis.com/v0/b/trackguinea.firebasestorage.app/o/truck%20trancnnekt.mp4?alt=media&token=7de6467d-ed83-412a-a1dc-3d3b3b86ae60",
+              "embedUrl": "https://transconnekt.com/fr/services"
+            })
+          }}
+        />
         <section className="relative py-24 md:py-32 overflow-hidden min-h-[40vh] flex items-center bg-slate-950">
           {/* Background Video */}
           <video

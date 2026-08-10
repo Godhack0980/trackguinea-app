@@ -15,15 +15,25 @@ const routes = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return routes.flatMap((route) =>
+  const localizedEntries = routes.flatMap((route) =>
     locales.map((locale) => {
       const url = `${host}/${locale}${route}`;
       return {
         url,
         lastModified: new Date(),
         changeFrequency: 'daily' as const,
-        priority: route === '' ? 1.0 : 0.8,
+        priority: route === '' ? 1.0 : (route === '/services' || route === '/offers' ? 0.9 : 0.8),
       };
     })
   );
+
+  return [
+    {
+      url: host,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 1.0,
+    },
+    ...localizedEntries,
+  ];
 }

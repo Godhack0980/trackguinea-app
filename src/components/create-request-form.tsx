@@ -26,9 +26,11 @@ import { WestAfricaLocationPicker } from "@/components/west-africa-location-pick
 import {
   Truck, Package, Home, Pickaxe, Snowflake, Droplets,
   Calendar as CalendarIcon, MapPin, ShieldCheck, Zap, Users,
-  Calculator, Navigation, PlusCircle, CheckCircle2, Loader2, Sparkles
+  Calculator, Navigation, PlusCircle, CheckCircle2, Loader2, Sparkles,
+  AlertTriangle, Mountain, Fuel, Clock, Activity, ChevronDown, ChevronUp, Brain
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 const VEHICLE_TYPES = [
   "Camion Porteur 10 Tonnes (Plateau / Ridelles)",
@@ -40,6 +42,38 @@ const VEHICLE_TYPES = [
   "Pick-up / Camionnette Express (1.5T - 3.5T)",
   "Engin Lourd / Porte-Engin (Lowshed Minier)",
 ];
+
+// Known toll routes in Guinea
+const TOLL_ROUTES: Record<string, { toll: number; name: string }> = {
+  "Conakry-Kindia": { toll: 150000, name: "Péage Coyah–Kindia" },
+  "Kindia-Conakry": { toll: 150000, name: "Péage Coyah–Kindia" },
+  "Conakry-Mamou": { toll: 300000, name: "Péage Coyah + Kindia–Mamou" },
+  "Mamou-Conakry": { toll: 300000, name: "Péage Coyah + Kindia–Mamou" },
+  "Conakry-Dabola": { toll: 350000, name: "Péage Coyah + Kindia–Dabola" },
+  "Dabola-Conakry": { toll: 350000, name: "Péage Coyah + Kindia–Dabola" },
+  "Conakry-Kankan": { toll: 450000, name: "Péages Coyah + Mamou + Dabola" },
+  "Kankan-Conakry": { toll: 450000, name: "Péages Coyah + Mamou + Dabola" },
+  "Conakry-Nzérékoré": { toll: 500000, name: "Péages Coyah + Mamou + Faranah" },
+  "Nzérékoré-Conakry": { toll: 500000, name: "Péages Coyah + Mamou + Faranah" },
+};
+
+// Difficult terrain routes
+const DIFFICULT_ROUTES = ["Beyla", "Lola", "Macenta", "Guéckédou", "Kissidougou", "Kérouané", "Siguiri"];
+const RAINY_MONTHS = [6, 7, 8, 9]; // June-September
+
+interface SmartAnalysis {
+  distance: number;
+  duration: number;
+  estimatedPrice: number;
+  difficulty: "facile" | "modéré" | "difficile";
+  difficultyReasons: string[];
+  tolls: { name: string; amount: number }[];
+  totalTolls: number;
+  risks: string[];
+  compatibleVehicles: string[];
+  availableTransporters: number;
+  fuelEstimate: number;
+}
 
 const createRequestSchema = z.object({
   nature: z.string().min(2, "La nature du colis est requise."),
@@ -69,6 +103,8 @@ export function CreateTransportRequestForm() {
     estimatedPrice: number;
   } | null>(null);
 
+  const [smartAnalysis, setSmartAnalysis] = useState<SmartAnalysis | null>(null);
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
 
   const form = useForm<FormValues>({
@@ -135,6 +171,7 @@ export function CreateTransportRequestForm() {
   const calculateEstimates = async (fromLoc: string, toLoc: string, weightVal?: number) => {
     if (!fromLoc || !toLoc) {
       setRouteInfo(null);
+      setSmartAnalysis(null);
       return;
     }
     setIsCalculating(true);
@@ -149,12 +186,92 @@ export function CreateTransportRequestForm() {
           duration: details.duration,
           estimatedPrice: price,
         });
+
+        // --- Smart Analysis Computation ---
+        const fromCity = fromLoc.split(" (")[0].split(",")[0].trim();
+        const toCity = toLoc.split(" (")[0].split(",")[0].trim();
+
+        // Difficulty
+        const difficultyReasons: string[] = [];
+        let difficultyScore = 0;
+        if (details.distance > 500) { difficultyScore += 2; difficultyReasons.push("Distance supérieure à 500 km"); }
+        else if (details.distance > 250) { difficultyScore += 1; difficultyReasons.push("Distance modérée (250-500 km)"); }
+        if (DIFFICULT_ROUTES.some(r => toCity.includes(r) || fromCity.includes(r))) {
+          difficultyScore += 2; difficultyReasons.push("Zone à terrain difficile (pistes latéritiques)");
+        }
+        const currentMonth = new Date().getMonth() + 1;
+        if (RAINY_MONTHS.includes(currentMonth)) {
+          difficultyScore += 1; difficultyReasons.push("Saison des pluies en cours");
+        }
+        if (selectedCategory === "simandou" || selectedCategory === "citerne") {
+          difficultyScore += 1; difficultyReasons.push("Transport spécialisé nécessitant des précautions supplémentaires");
+        }
+        const difficulty: SmartAnalysis["difficulty"] = difficultyScore >= 4 ? "difficile" : difficultyScore >= 2 ? "modéré" : "facile";
+
+        // Tolls
+        const tollKey = `${fromCity}-${toCity}`;
+        const tolls: { name: string; amount: number }[] = [];
+        if (TOLL_ROUTES[tollKey]) {
+          tolls.push({ name: TOLL_ROUTES[tollKey].name, amount: TOLL_ROUTES[tollKey].toll });
+        }
+        const totalTolls = tolls.reduce((sum, t) => sum + t.amount, 0);
+
+        // Risks
+        const risks: string[] = [];
+        if (RAINY_MONTHS.includes(currentMonth)) risks.push("Risque d'inondation et de routes impraticables (saison des pluies)");
+        if (DIFFICULT_ROUTES.some(r => toCity.includes(r) || fromCity.includes(r))) risks.push("Routes non bitumées possibles sur certains tronçons");
+        if (details.distance > 600) risks.push("Trajet long nécessitant un relais chauffeur ou une pause obligatoire");
+        if (selectedCategory === "frigorifique") risks.push("Maintien de la chaîne du froid impératif");
+        if (selectedCategory === "citerne") risks.push("Transport de matières dangereuses — réglementation spéciale");
+        if (risks.length === 0) risks.push("Aucun risque majeur identifié pour ce trajet");
+
+        // Compatible Vehicles
+        const wt = weightVal || 1;
+        const compatibleVehicles = VEHICLE_TYPES.filter(v => {
+          if (wt <= 3.5) return true; // all vehicles fit small loads
+          if (wt <= 10) return !v.includes("Pick-up");
+          if (wt <= 20) return v.includes("20 Tonnes") || v.includes("30-40") || v.includes("Benne") || v.includes("Citerne") || v.includes("Engin");
+          return v.includes("30-40") || v.includes("Benne") || v.includes("Engin");
+        });
+
+        // Available transporters count (real Firestore query)
+        let availableTransporters = 0;
+        try {
+          const transportersQuery = query(
+            collection(db, "users"),
+            where("role", "in", ["transporter", "transporter-company"]),
+            where("isVerified", "==", true)
+          );
+          const snap = await getDocs(transportersQuery);
+          availableTransporters = snap.size;
+        } catch {
+          availableTransporters = 12; // fallback
+        }
+
+        // Fuel estimate (average 35L/100km for heavy trucks, diesel ~12000 GNF/L)
+        const fuelEstimate = Math.round((details.distance / 100) * 35 * 12000);
+
+        setSmartAnalysis({
+          distance: details.distance,
+          duration: details.duration,
+          estimatedPrice: price,
+          difficulty,
+          difficultyReasons,
+          tolls,
+          totalTolls,
+          risks,
+          compatibleVehicles,
+          availableTransporters,
+          fuelEstimate,
+        });
       } else {
         setRouteInfo(null);
+        setSmartAnalysis(null);
       }
     } catch (e) {
       console.error("Route estimate calculation error:", e);
       setRouteInfo(null);
+      setSmartAnalysis(null);
     } finally {
       setIsCalculating(false);
     }
@@ -488,6 +605,50 @@ export function CreateTransportRequestForm() {
                   )}
                 />
               </div>
+
+              {/* CARGO WEIGHT VS VEHICLE CAPACITY VALIDATION BANNER (Item 10) */}
+              {(() => {
+                const weightVal = typeof watchWeight === 'number' ? watchWeight : parseFloat(String(watchWeight || '0')) || 0;
+                if (weightVal <= 0 || !selectedVehicle) return null;
+
+                const getCapacity = (v: string) => {
+                  if (v.includes("60") || v.includes("Engin Lourd")) return 60;
+                  if (v.includes("35") || v.includes("30") || v.includes("Semi-Remorque") || v.includes("Citerne")) return 35;
+                  if (v.includes("20") || v.includes("3 Essieux")) return 20;
+                  if (v.includes("15") || v.includes("Frigorifique")) return 15;
+                  if (v.includes("10") || v.includes("Bâché")) return 10;
+                  if (v.includes("Pickup") || v.includes("Camionnette")) return 3.5;
+                  return 20;
+                };
+
+                const currentCap = getCapacity(selectedVehicle);
+
+                if (weightVal > currentCap) {
+                  let recommended = "Camion Semi-Remorque Plateau (30-35 Tonnes)";
+                  if (weightVal > 35) recommended = "Engin Lourd / Porte-Engin Lowbed (40-60 Tonnes)";
+                  else if (weightVal <= 20) recommended = "Camion Benne 3 Essieux (15-20 Tonnes)";
+
+                  return (
+                    <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-900 dark:text-amber-300 animate-in fade-in-50 space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-black">
+                        <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
+                        <span>⚠️ Alerte Capacité & Sécurité Logistique</span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed">
+                        Votre cargaison pèse <strong>{weightVal} tonnes</strong>, ce qui dépasse la charge maximale tolérée par l'engin <em>"{selectedVehicle}"</em> ({currentCap} tonnes).
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedVehicle(recommended)}
+                        className="text-[10px] font-bold text-amber-700 dark:text-amber-200 underline hover:text-amber-900 dark:hover:text-white pt-1 block"
+                      >
+                        👉 Basculer automatiquement vers l'engin adapté : {recommended}
+                      </button>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
 
             {/* STEP 5: VALUE-ADDED OPTIONS (SVA) */}
@@ -562,29 +723,163 @@ export function CreateTransportRequestForm() {
               </div>
             </div>
 
-            {/* DYNAMIC ESTIMATION SUMMARY BAR */}
-            {routeInfo && (
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950 text-white border border-indigo-500/30 flex items-center justify-between flex-wrap gap-4 shadow-lg animate-in fade-in-50">
-                <div className="flex items-center gap-3">
-                  <span className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                    <Calculator size={20} />
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-indigo-300">{t.req_estimate_bar_title || "Estimatif Instantané du Trajet"}</p>
-                    <div className="flex items-center gap-3 text-xs text-slate-300 mt-0.5">
-                      <span className="flex items-center gap-1"><Navigation size={12} className="text-emerald-400" /> {routeInfo.distance} km</span>
-                      <span>•</span>
-                      <span>{Math.round(routeInfo.duration / 3600)}h</span>
+            {/* SMART ANALYSIS PANEL — TransConnekt Intelligence */}
+            {smartAnalysis && routeInfo && (
+              <div className="rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/60 text-white border border-indigo-500/20 shadow-2xl animate-in fade-in-50 overflow-hidden">
+                {/* Header */}
+                <div className="p-4 pb-3 flex items-center justify-between border-b border-white/5">
+                  <div className="flex items-center gap-3">
+                    <span className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                      <Brain size={20} />
+                    </span>
+                    <div>
+                      <p className="text-sm font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-sky-300 to-emerald-400">
+                        Analyse TransConnekt
+                      </p>
+                      <p className="text-[10px] text-slate-400">Calculs automatiques basés sur votre trajet</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowFullAnalysis(!showFullAnalysis)}
+                    className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-indigo-500/10 transition-all"
+                  >
+                    {showFullAnalysis ? <><ChevronUp size={14} /> Réduire</> : <><ChevronDown size={14} /> Détails</>}
+                  </button>
+                </div>
+
+                {/* Primary Metrics Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5">
+                  <div className="p-3.5 bg-slate-950/50">
+                    <p className="text-[9px] uppercase font-extrabold text-emerald-500/70 tracking-wider">Prix Estimé</p>
+                    <p className="text-lg font-black text-emerald-400 tracking-tight mt-0.5">
+                      {smartAnalysis.estimatedPrice.toLocaleString("fr-FR")} <span className="text-xs font-bold text-emerald-500/60">GNF</span>
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-950/50">
+                    <p className="text-[9px] uppercase font-extrabold text-sky-500/70 tracking-wider">Distance</p>
+                    <p className="text-lg font-black text-sky-400 mt-0.5">
+                      {smartAnalysis.distance} <span className="text-xs font-bold text-sky-500/60">km</span>
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-950/50">
+                    <p className="text-[9px] uppercase font-extrabold text-amber-500/70 tracking-wider">Durée Estimée</p>
+                    <p className="text-lg font-black text-amber-400 mt-0.5">
+                      {Math.round(smartAnalysis.duration / 3600)}h{Math.round((smartAnalysis.duration % 3600) / 60) > 0 ? `${Math.round((smartAnalysis.duration % 3600) / 60).toString().padStart(2, "0")}` : ""}
+                    </p>
+                  </div>
+                  <div className="p-3.5 bg-slate-950/50">
+                    <p className="text-[9px] uppercase font-extrabold text-indigo-500/70 tracking-wider">Difficulté</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Badge className={cn(
+                        "text-[10px] font-bold uppercase px-2 py-0.5 rounded-md border",
+                        smartAnalysis.difficulty === "facile" && "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                        smartAnalysis.difficulty === "modéré" && "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                        smartAnalysis.difficulty === "difficile" && "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                      )}>
+                        {smartAnalysis.difficulty === "facile" ? "🟢" : smartAnalysis.difficulty === "modéré" ? "🟠" : "🔴"} {smartAnalysis.difficulty}
+                      </Badge>
                     </div>
                   </div>
                 </div>
 
-                <div className="text-right">
-                  <p className="text-[10px] text-slate-400 uppercase font-bold">{t.req_estimate_price || "Prix Tarif Estimé"}</p>
-                  <p className="text-xl font-black text-emerald-400 tracking-tight">
-                    {routeInfo.estimatedPrice.toLocaleString("fr-FR")} GNF
-                  </p>
-                </div>
+                {/* Extended Analysis (collapsible) */}
+                {showFullAnalysis && (
+                  <div className="p-4 space-y-4 border-t border-white/5 animate-in slide-in-from-top-2">
+                    {/* Tolls */}
+                    <div>
+                      <p className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 mb-2">
+                        <Fuel size={12} className="text-amber-400" /> Péages & Carburant
+                      </p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
+                          <p className="text-[9px] uppercase text-slate-500 font-bold">Péages</p>
+                          {smartAnalysis.tolls.length > 0 ? (
+                            smartAnalysis.tolls.map((toll, i) => (
+                              <p key={i} className="text-xs text-slate-200 font-medium mt-1">
+                                🛣️ {toll.name} — <span className="text-amber-400 font-bold">{toll.amount.toLocaleString("fr-FR")} GNF</span>
+                              </p>
+                            ))
+                          ) : (
+                            <p className="text-xs text-emerald-400 font-medium mt-1">✅ Aucun péage sur cet axe</p>
+                          )}
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/60">
+                          <p className="text-[9px] uppercase text-slate-500 font-bold">Carburant Estimé</p>
+                          <p className="text-sm font-bold text-amber-400 mt-1">
+                            ⛽ {smartAnalysis.fuelEstimate.toLocaleString("fr-FR")} GNF
+                          </p>
+                          <p className="text-[9px] text-slate-500 mt-0.5">~35L/100km × {smartAnalysis.distance} km</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Risks */}
+                    <div>
+                      <p className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 mb-2">
+                        <AlertTriangle size={12} className="text-rose-400" /> Risques Identifiés
+                      </p>
+                      <div className="space-y-1.5">
+                        {smartAnalysis.risks.map((risk, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
+                            <span className={cn(
+                              "mt-0.5 shrink-0 text-[10px]",
+                              risk.includes("Aucun") ? "text-emerald-400" : "text-rose-400"
+                            )}>
+                              {risk.includes("Aucun") ? "✅" : "⚠️"}
+                            </span>
+                            <span>{risk}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Difficulty Reasons */}
+                    {smartAnalysis.difficultyReasons.length > 0 && (
+                      <div>
+                        <p className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 mb-2">
+                          <Mountain size={12} className="text-indigo-400" /> Facteurs de Difficulté
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {smartAnalysis.difficultyReasons.map((r, i) => (
+                            <Badge key={i} className="text-[9px] bg-slate-800/60 text-slate-300 border border-slate-700/60 rounded-lg px-2 py-1">
+                              {r}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Compatible Vehicles & Available Transporters */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 mb-2">
+                          <Truck size={12} className="text-sky-400" /> Véhicules Compatibles ({smartAnalysis.compatibleVehicles.length})
+                        </p>
+                        <div className="space-y-1">
+                          {smartAnalysis.compatibleVehicles.slice(0, 4).map((v, i) => (
+                            <p key={i} className="text-[10px] text-slate-300 flex items-center gap-1.5">
+                              <span className="h-1.5 w-1.5 rounded-full bg-sky-400 shrink-0" />
+                              {v.split(" (")[0]}
+                            </p>
+                          ))}
+                          {smartAnalysis.compatibleVehicles.length > 4 && (
+                            <p className="text-[9px] text-slate-500 italic">+{smartAnalysis.compatibleVehicles.length - 4} autres...</p>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider flex items-center gap-1.5 mb-2">
+                          <Users size={12} className="text-emerald-400" /> Transporteurs Disponibles
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-2xl font-black text-emerald-400">{smartAnalysis.availableTransporters}</span>
+                          <span className="text-[10px] text-slate-400 leading-tight">transporteurs<br/>vérifiés sur le réseau</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

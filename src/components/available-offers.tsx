@@ -26,7 +26,7 @@ const prefecturesGuinea = [
   "Siguiri", "Télimélé", "Tougué", "Yomou"
 ];
 
-const fallbackMapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'process.env.NEXT_PUBLIC_MAPBOX_TOKEN!';
+const fallbackMapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 export default function AvailableOffersComponent() {
   const { toast } = useToast();

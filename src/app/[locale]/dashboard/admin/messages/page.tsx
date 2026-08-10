@@ -14,6 +14,7 @@ import { Send, MessageSquare, Bot, Search, User, Clock, UserPlus, Loader2, Paper
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { requestNotificationPermission, sendBrowserNotification } from '@/lib/notifications';
 import {
   Dialog,
   DialogContent,
@@ -153,11 +154,36 @@ export default function AdminMessagesPage() {
     );
   }, [selectedConvoId]);
 
+  const isInitialConvoLoadRef = useRef(true);
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
   useEffect(() => {
     if (!messagesQuery || !user || !selectedConvoId) return;
+    isInitialConvoLoadRef.current = true;
+
     const unsub = onSnapshot(messagesQuery, snap => {
       const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() } as Message));
       setMessages(msgs);
+
+      if (!isInitialConvoLoadRef.current) {
+        snap.docChanges().forEach(change => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            if (data.senderId !== user.uid) {
+              sendBrowserNotification(`Message de ${data.senderName || 'Utilisateur'}`, {
+                body: data.text || "Fichier joint réçu.",
+                tag: 'admin-message',
+              });
+            }
+          }
+        });
+      } else {
+        isInitialConvoLoadRef.current = false;
+      }
+
       setTimeout(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }, 50);

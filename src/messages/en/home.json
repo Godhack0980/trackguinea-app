@@ -136,5 +136,21 @@
   "transporter_feat3_title": "Free fleet management",
   "transporter_feat3_desc": "Register your trucks, assign missions to your drivers and manage your schedules with ease.",
   "transporter_feat4_title": "Increased online visibility",
-  "transporter_feat4_desc": "Publish your available vehicles in our Public Gallery so that pro and individual clients contact you directly."
+  "transporter_feat4_desc": "Publish your available vehicles in our Public Gallery so that pro and individual clients contact you directly.",
+  "nav_docs": "Documentation",
+  "docs_hero_badge": "Help Center & Official Documentation",
+  "docs_hero_title": "TransConnekt Complete Documentation",
+  "docs_hero_desc": "Consult the official platform user manual, discover step-by-step guides, and download printable formats.",
+  "docs_btn_print": "Print / PDF",
+  "docs_btn_download_html": "Download HTML",
+  "docs_btn_download_md": "Download Markdown (.MD)",
+  "docs_card1_title": "Shipper Guides",
+  "docs_card1_desc": "Request creation, GPS parcel tracking, and quote validation.",
+  "docs_card2_title": "Carrier Portal",
+  "docs_card2_desc": "Compliance audit (250k GNF), 2.5% commission, and freight offers.",
+  "docs_card3_title": "Tracking & API",
+  "docs_card3_desc": "Real-time GPS tracking across all 33 prefectures of Guinea.",
+  "docs_viewer_title": "Interactive User Manual v1.0",
+  "docs_btn_fullscreen": "Open Fullscreen",
+  "docs_btn_back": "How It Works Page"
 }

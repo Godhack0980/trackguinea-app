@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import TransconnektIntelligence from '@/components/transconnekt-intelligence';
 
 // Helper to generate unique ID label for users if not present in DB
 const getUserIdLabel = (user: any, docId: string) => {
@@ -212,6 +213,8 @@ export default function AdminDashboard() {
           <p className="text-sm text-muted-foreground mt-1">Supervisez l'activité globale, gérez les demandes et observez le transit en temps réel.</p>
         </div>
       </div>
+
+      <TransconnektIntelligence />
 
       {/* ── BARRE DE RECHERCHE GÉNÉRALISTE D'IDENTIFIANTS UNIQUES ── */}
       <Card className="shadow-xl rounded-3xl border-2 border-primary/20 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 text-white overflow-hidden">

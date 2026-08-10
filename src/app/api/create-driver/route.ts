@@ -10,7 +10,7 @@ const firebaseConfig = {
   "projectId": process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "transconnekt",
   "appId": process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:870790440395:web:552a79ce5837ca73ed424e",
   "storageBucket": process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "transconnekt.firebasestorage.app",
-  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "process.env.NEXT_PUBLIC_MAPBOX_TOKEN!",
+  "apiKey": process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "",
   "authDomain": process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "transconnekt.firebaseapp.com",
   "messagingSenderId": process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "870790440395"
 };

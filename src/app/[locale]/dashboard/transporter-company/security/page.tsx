@@ -125,11 +125,11 @@ export default function SecurityPage() {
                       <tr key={d.id} className="hover:bg-slate-900/30 transition-all">
                         <td className="p-4 pl-6">
                           <div className="flex flex-col">
-                            <span className="font-bold text-slate-200">{d.firstName} {d.lastName}</span>
+                            <span className="font-bold text-foreground">{d.firstName} {d.lastName}</span>
                             <span className="text-[10px] text-muted-foreground font-mono">ID: {d.id.substring(0, 8)}...</span>
                           </div>
                         </td>
-                        <td className="p-4 text-xs text-slate-300">
+                        <td className="p-4 text-xs text-muted-foreground">
                           {d.permitNumber ? `Permis enregistré (${d.permitNumber})` : "Aucun permis enregistré"}
                         </td>
                         <td className="p-4">
@@ -164,7 +164,7 @@ export default function SecurityPage() {
         </Card>
 
         {/* Real-time security Audit log panel */}
-        <Card className="lg:col-span-1 border-border/50 bg-[#0d1322]/80 shadow-xl rounded-3xl overflow-hidden flex flex-col justify-between">
+        <Card className="lg:col-span-1 border-border/50 bg-card/60 backdrop-blur-md shadow-xl rounded-3xl overflow-hidden flex flex-col justify-between">
           <div>
             <CardHeader className="border-b border-border/20">
               <CardTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
@@ -182,13 +182,13 @@ export default function SecurityPage() {
               ) : (
                 <div className="space-y-3">
                   {auditLogs.map((log) => (
-                    <div key={log.id} className="p-3 bg-slate-950/70 border border-slate-900 rounded-xl space-y-1 text-xs">
+                    <div key={log.id} className="p-3 bg-muted/60 border border-border rounded-xl space-y-1 text-xs">
                       <div className="flex justify-between items-center text-[10px] text-muted-foreground font-mono">
                         <span>{log.actorEmail}</span>
                         <span>{log.timestamp?.toDate ? new Date(log.timestamp.toDate()).toLocaleTimeString('fr-FR') : "Maintenant"}</span>
                       </div>
-                      <p className="text-slate-200 leading-relaxed text-[11px]">{log.details}</p>
-                      <div className="flex justify-between items-center pt-1 text-[9px] text-slate-500 font-mono">
+                      <p className="text-foreground leading-relaxed text-[11px]">{log.details}</p>
+                      <div className="flex justify-between items-center pt-1 text-[9px] text-muted-foreground font-mono">
                         <span>IP: {log.ipAddress}</span>
                         <span className="font-bold text-indigo-400">{log.action}</span>
                       </div>
@@ -198,7 +198,7 @@ export default function SecurityPage() {
               )}
             </CardContent>
           </div>
-          <div className="p-4 border-t border-border/20 bg-slate-950/20 text-[10px] text-muted-foreground font-mono flex items-center gap-1.5 justify-center">
+          <div className="p-4 border-t border-border/20 bg-muted/20 text-[10px] text-muted-foreground font-mono flex items-center gap-1.5 justify-center">
             <ShieldCheck size={12} className="text-emerald-400 animate-pulse" />
             <span>{t.security_immutable}</span>
           </div>

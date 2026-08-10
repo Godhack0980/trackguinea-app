@@ -134,5 +134,21 @@
   "transporter_feat3_title": "免费的企业车队管理",
   "transporter_feat3_desc": "便捷录入卡车资料、分派任务给司机 and 轻松掌握车队排班。",
   "transporter_feat4_title": "增加您的在线曝光率",
-  "transporter_feat4_desc": "将您的可用车辆发布到我们的公共车源库，让有需求的大宗客户直接联系您。"
+  "transporter_feat4_desc": "将您的可用车辆发布到我们的公共车源库，让有需求的大宗客户直接联系您。",
+  "nav_docs": "文档",
+  "docs_hero_badge": "帮助中心与官方文档",
+  "docs_hero_title": "TransConnekt 完整文档指南",
+  "docs_hero_desc": "查阅平台官方使用手册，探索逐步操作指南并下载可打印格式。",
+  "docs_btn_print": "打印 / PDF",
+  "docs_btn_download_html": "下载 HTML",
+  "docs_btn_download_md": "下载 Markdown (.MD)",
+  "docs_card1_title": "发货人指南",
+  "docs_card1_desc": "创建需求、GPS包裹追踪及报价确认。",
+  "docs_card2_title": "承运商专区",
+  "docs_card2_desc": "合规性审核(250k GNF)、2.5%佣金及货源报价。",
+  "docs_card3_title": "追踪与 API",
+  "docs_card3_desc": "几内亚33个省份全境实时GPS定位追踪。",
+  "docs_viewer_title": "交互式使用手册 v1.0",
+  "docs_btn_fullscreen": "全屏打开",
+  "docs_btn_back": "服务指南页面"
 }

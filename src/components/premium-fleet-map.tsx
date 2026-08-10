@@ -5,7 +5,7 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { guineanCities } from "@/lib/guinea-cities";
 
-mapboxgl.accessToken = 'process.env.NEXT_PUBLIC_MAPBOX_TOKEN!';
+mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
 interface PremiumFleetMapProps {
     job: {

@@ -29,6 +29,33 @@ import zhOffers from "@/messages/zh/available_offers.json";
 
 export type Language = "fr" | "en" | "es" | "pt" | "ar" | "de" | "zh";
 
+export const FRENCH_FALLBACKS: Record<string, string> = {
+  intel_title: "TransConnekt Intelligence",
+  intel_subtitle: "Analyses prédictives et aide à la décision en temps réel.",
+  intel_active_badge: "Moteur IA Actif",
+  intel_attention: "Attention",
+  intel_alert: "Alerte",
+  intel_saving: "Économie",
+  intel_tracking: "Suivi",
+  intel_compliance: "Conformité",
+  intel_opportunity: "Opportunité",
+  intel_action_validate: "Vérifier",
+  intel_action_view_offer: "Voir l'offre",
+  intel_action_track: "Suivre",
+  intel_action_manage_fleet: "Gérer la flotte",
+  intel_action_view_requests: "Voir les demandes",
+  intel_action_view_missions: "Voir les missions",
+  msg_admin_verification: "🔴 {count} inscriptions d'entreprises nécessitent votre validation administrative.",
+  msg_admin_stalled: "📍 Le chauffeur {driver} ({truck}) n'a pas progressé depuis {minutes} minutes.",
+  msg_admin_pending_requests: "⚠️ {count} demandes de transport sont en attente d'attribution depuis plus de 2 heures.",
+  msg_client_savings: "💰 Vous pourriez économiser environ {amount} GNF en choisissant l'offre de {carrier}.",
+  msg_client_delay_risk: "⚠️ Le transporteur {carrier} présente un risque de retard élevé pour votre livraison de {from} à {to}.",
+  msg_client_new_offers: "💡 {count} nouvelles offres de transporteurs ont été soumises pour votre demande '{nature}'.",
+  msg_transporter_matches: "💡 {count} missions correspondent à votre flotte.",
+  msg_transporter_insurance: "📄 L'assurance ou la visite technique de votre camion {truck} ({registration}) expire dans {days} jours.",
+  msg_transporter_demand: "📈 Forte demande de fret enregistrée sur l'axe {route} (+{percent}% de gains potentiels)."
+};
+
 const homeDictionaries: Record<Language, Record<string, string>> = {
   fr: frHome,
   en: enHome,
@@ -1426,7 +1453,13 @@ export function useDomTranslation() {
       const d = dicts[langKey as Exclude<Language, "fr">];
       for (const k of Object.keys(d)) {
         if (d[k]) {
-          revDict[d[k]] = k;
+          const lk = k.toLowerCase();
+          // If key is a technical key (e.g. intel_title, msg_admin_verification), map to FRENCH_FALLBACKS if available, never raw key name
+          if (FRENCH_FALLBACKS[lk]) {
+            revDict[d[k]] = FRENCH_FALLBACKS[lk];
+          } else if (!k.includes('_') && !lk.startsWith('intel_') && !lk.startsWith('msg_')) {
+            revDict[d[k]] = k;
+          }
         }
       }
     }
@@ -1488,10 +1521,12 @@ export function useDomTranslation() {
             }
           }
         } else if (lang === "fr" && revDict[val]) {
-          // Revert to French
-          const leadingSpace = originalVal.match(/^\s*/)?.[0] || "";
-          const trailingSpace = originalVal.match(/^\s*$/)?.[0] || "";
-          node.nodeValue = leadingSpace + frenchText + trailingSpace;
+          // Revert to French safely (never set nodeValue to a key containing underscores or intel_)
+          if (!frenchText.includes('_') && !frenchText.startsWith('intel_') && !frenchText.startsWith('msg_')) {
+            const leadingSpace = originalVal.match(/^\s*/)?.[0] || "";
+            const trailingSpace = originalVal.match(/\s*$/)?.[0] || "";
+            node.nodeValue = leadingSpace + frenchText + trailingSpace;
+          }
         }
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const el = node as Element;

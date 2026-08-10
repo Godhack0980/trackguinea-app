@@ -174,7 +174,7 @@ export default function CustomsPage() {
                 <Input 
                   id="registration" 
                   placeholder="RC-2026-A" 
-                  className="bg-slate-950 border-slate-800"
+                  className="bg-background border-border text-foreground"
                   value={form.registration}
                   onChange={e => setForm(f => ({ ...f, registration: e.target.value }))}
                 />
@@ -185,7 +185,7 @@ export default function CustomsPage() {
                 <Input 
                   id="cargoDesc" 
                   placeholder="Ex: 20 Tonnes de Bauxite" 
-                  className="bg-slate-950 border-slate-800"
+                  className="bg-background border-border text-foreground"
                   value={form.cargoDescription}
                   onChange={e => setForm(f => ({ ...f, cargoDescription: e.target.value }))}
                 />
@@ -197,7 +197,7 @@ export default function CustomsPage() {
                   <Input 
                     id="origin" 
                     value={form.originCountry}
-                    className="bg-slate-950 border-slate-800"
+                    className="bg-background border-border text-foreground"
                     onChange={e => setForm(f => ({ ...f, originCountry: e.target.value }))}
                   />
                 </div>
@@ -206,7 +206,7 @@ export default function CustomsPage() {
                   <Input 
                     id="broker" 
                     placeholder="Nom du déclarant" 
-                    className="bg-slate-950 border-slate-800"
+                    className="bg-background border-border text-foreground"
                     value={form.brokerName}
                     onChange={e => setForm(f => ({ ...f, brokerName: e.target.value }))}
                   />
@@ -285,7 +285,7 @@ export default function CustomsPage() {
                         <td className="p-4 pl-6">
                           <div className="flex flex-col">
                             <span className="font-bold text-foreground">{d.registration}</span>
-                            <span className="text-xs text-slate-300">{d.cargoDescription}</span>
+                            <span className="text-xs text-muted-foreground">{d.cargoDescription}</span>
                             <span className="text-[10px] text-muted-foreground font-mono">Provenance: {d.originCountry} | Déclarant: {d.brokerName || "N/A"}</span>
                           </div>
                         </td>

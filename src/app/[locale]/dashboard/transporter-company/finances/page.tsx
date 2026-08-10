@@ -20,7 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import {
   Wallet, Loader2, Download, TrendingUp, Receipt,
-  CheckCircle2, Clock, AlertCircle, RefreshCw, Users2, Landmark, Zap, Plus
+  CheckCircle2, Clock, AlertCircle, RefreshCw, Users2, Landmark, Zap, Plus, FileText
 } from "lucide-react"
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis,
@@ -285,6 +285,128 @@ export default function FinancesPage() {
     a.download = `rapport_comptable_${userData?.companyName ?? "entreprise"}_${format(new Date(), "yyyy-MM-dd")}.txt`
     a.click(); URL.revokeObjectURL(url)
   }
+
+  const handlePrintDetailedInvoice = (inv: any) => {
+    const priceVal = Number(inv.amount) || 0;
+    const commission = Math.round(priceVal * 0.05); // Commission 5%
+    const vat = Math.round(priceVal * 0.18); // TVA 18% in Guinea
+    const totalClient = priceVal + vat;
+    const totalNetTransporter = priceVal + vat - commission;
+    const date = inv.createdAt?.toDate ? inv.createdAt.toDate().toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR');
+    
+    const printContent = `
+      <html>
+        <head>
+          <title>Facture_${inv.id.substring(0, 8).toUpperCase()}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; padding: 40px; margin: 0; }
+            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+            .logo { font-size: 24px; font-weight: 800; color: #4f46e5; }
+            .invoice-details { text-align: right; font-size: 14px; line-height: 1.5; }
+            .address-box { display: flex; justify-content: space-between; margin-bottom: 40px; font-size: 14px; }
+            .address-col { width: 48%; }
+            .title { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #0f172a; text-transform: uppercase; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+            th { background: #f8fafc; padding: 12px; font-size: 12px; font-weight: 700; text-align: left; text-transform: uppercase; border-bottom: 1px solid #cbd5e1; }
+            td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+            .total-section { display: flex; justify-content: flex-end; }
+            .total-table { width: 400px; }
+            .total-table td { padding: 8px 12px; border: none; font-size: 13px; }
+            .total-table tr.divider td { border-top: 1px solid #cbd5e1; padding-top: 12px; }
+            .total-table tr.grand-total td { font-size: 16px; font-weight: 800; color: #4f46e5; border-top: 2px solid #4f46e5; }
+            .footer { margin-top: 60px; font-size: 11px; text-align: center; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="logo">TRANSCONNEKT</div>
+              <div style="font-size: 12px; color: #64748b; margin-top: 5px;">Plateforme Logistique Guinéenne</div>
+            </div>
+            <div class="invoice-details">
+              <strong style="font-size: 16px;">FACTURE DE MISSION</strong><br/>
+              N° : INV-2026-${inv.id.substring(0, 8).toUpperCase()}<br/>
+              Mission : #${inv.jobId ? inv.jobId.substring(0, 8).toUpperCase() : "TC-2026-00452"}<br/>
+              Date : ${date}<br/>
+              Statut : ${inv.status?.toUpperCase() || "PENDING"}
+            </div>
+          </div>
+
+          <div class="address-box">
+            <div class="address-col">
+              <strong style="color: #64748b;">PRESTATAIRE (TRANSPORTEUR) :</strong><br/>
+              <strong>${userData?.companyName || "Entreprise de Transport"}</strong><br/>
+              ID: ${(userData?.companyId || user?.uid || "").substring(0, 8)}<br/>
+              Guinée
+            </div>
+            <div class="address-col">
+              <strong style="color: #64748b;">DESTINATAIRE (CLIENT) :</strong><br/>
+              <strong>${inv.clientName || "Client Importateur"}</strong><br/>
+              ID: ${inv.clientId ? inv.clientId.substring(0, 8) : "N/A"}<br/>
+              Guinea
+            </div>
+          </div>
+
+          <div class="title">Détails de la transaction</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Axe de transport</th>
+                <th style="text-align: right;">Prix de base (GNF)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Transport Fret Routier de Marchandises</strong><br/>Service de livraison pour le compte de ${inv.clientName || "Client"}</td>
+                <td>${inv.from || "Départ"} &rarr; ${inv.to || "Arrivée"}</td>
+                <td style="text-align: right;">${priceVal.toLocaleString('fr-FR')} GNF</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="total-section">
+            <table class="total-table">
+              <tr>
+                <td>Prix transport :</td>
+                <td style="text-align: right;">${priceVal.toLocaleString('fr-FR')} GNF</td>
+              </tr>
+              <tr>
+                <td>Commission TransConnekt (5%) :</td>
+                <td style="text-align: right; color: #e11d48;">- ${commission.toLocaleString('fr-FR')} GNF</td>
+              </tr>
+              <tr>
+                <td>Taxes (TVA 18%) :</td>
+                <td style="text-align: right;">+ ${vat.toLocaleString('fr-FR')} GNF</td>
+              </tr>
+              <tr class="divider">
+                <td>Total Facturé au Client :</td>
+                <td style="text-align: right; font-weight: 600;">${totalClient.toLocaleString('fr-FR')} GNF</td>
+              </tr>
+              <tr class="grand-total">
+                <td><strong>Net à Recevoir :</strong></td>
+                <td style="text-align: right;"><strong>${totalNetTransporter.toLocaleString('fr-FR')} GNF</strong></td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="footer">
+            Facture générée automatiquement à la fin de la mission sur TransConnekt. Conforme à la législation fiscale guinéenne.
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            }
+          </script>
+        </body>
+      </html>
+    `;
+    const printWindow = window.open("", "_blank");
+    if (printWindow) {
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+    }
+  };
 
   if (loadingAuth || loading) return <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
 
@@ -599,7 +721,7 @@ export default function FinancesPage() {
           </CardTitle>
           <CardDescription>
             {invoices.length > 0
-              ? `${invoices.length} facture${invoices.length > 1 ? "s" : ""} — cliquez "Marquer payé" pour confirmer un paiement reçu`
+              ? `${invoices.length} facture${invoices.length > 1 ? "s" : ""} sous votre gestion.`
               : "Aucune facture générée. Utilisez le bouton ci-dessus pour créer des factures depuis vos courses terminées."}
           </CardDescription>
         </CardHeader>
@@ -607,8 +729,23 @@ export default function FinancesPage() {
           <CardContent className="p-0">
             <div className="divide-y divide-border/20">
               {invoices.map(inv => {
-                const isPaid = inv.status === "paid"
+                const statusVal = inv.status || "pending"
                 const date = inv.createdAt?.toDate ? format(inv.createdAt.toDate(), "dd MMM yyyy", { locale: fr }) : "—"
+
+                // Color themes for the 5 statuses
+                let statusBadgeStyle = ""
+                if (statusVal === "paid") {
+                  statusBadgeStyle = "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+                } else if (statusVal === "pending") {
+                  statusBadgeStyle = "bg-amber-500/10 text-amber-400 border-amber-500/25"
+                } else if (statusVal === "overdue") {
+                  statusBadgeStyle = "bg-rose-500/10 text-rose-400 border-rose-500/25"
+                } else if (statusVal === "refunded") {
+                  statusBadgeStyle = "bg-violet-500/10 text-violet-400 border-violet-500/25"
+                } else if (statusVal === "disputed") {
+                  statusBadgeStyle = "bg-orange-500/10 text-orange-400 border-orange-500/25"
+                }
+
                 return (
                   <div key={inv.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-4 hover:bg-muted/10 transition-colors">
                     <div className="flex items-center gap-3">
@@ -621,15 +758,43 @@ export default function FinancesPage() {
                     </div>
                     <div className="flex items-center gap-3 sm:ml-auto flex-wrap">
                       <p className="text-sm font-extrabold text-foreground">{inv.amount?.toLocaleString("fr-FR")} GNF</p>
-                      <Badge className={`border text-[10px] rounded-full px-2.5 py-1 font-bold ${isPaid ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25" : "bg-amber-500/10 text-amber-400 border-amber-500/25"}`}>
-                        {isPaid ? "Payé" : "En attente"}
-                      </Badge>
-                      {!isPaid && (
-                        <Button size="sm" onClick={() => handleMarkPaid(inv.id, inv.clientId, inv.amount)}
-                          className="h-8 rounded-xl text-xs gap-1.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 font-bold">
-                          <CheckCircle2 size={12}/> Marquer payé
-                        </Button>
-                      )}
+                      
+                      {/* Status select dropdown for states management */}
+                      <Select 
+                        value={statusVal} 
+                        onValueChange={async (newStatus) => {
+                          try {
+                            await updateDoc(doc(db, "invoices", inv.id), {
+                              status: newStatus,
+                              updatedAt: Timestamp.now()
+                            });
+                            toast({ title: "Statut mis à jour ✓", description: `La facture est passée en mode ${newStatus.toUpperCase()}` });
+                            fetchAll();
+                          } catch (e) {
+                            toast({ variant: "destructive", title: "Erreur", description: "Impossible de changer le statut." });
+                          }
+                        }}
+                      >
+                        <SelectTrigger className={`w-32 h-8 rounded-xl border text-[11px] font-bold text-slate-100 ${statusBadgeStyle}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-950 border-slate-800 text-slate-100 rounded-xl text-xs">
+                          <SelectItem value="pending">En attente</SelectItem>
+                          <SelectItem value="paid">Payé</SelectItem>
+                          <SelectItem value="overdue">En retard</SelectItem>
+                          <SelectItem value="refunded">Remboursé</SelectItem>
+                          <SelectItem value="disputed">Litige</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePrintDetailedInvoice(inv)}
+                        className="h-8 rounded-xl text-xs gap-1.5 border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold"
+                      >
+                        <FileText size={12}/> Facture PDF
+                      </Button>
                     </div>
                   </div>
                 )

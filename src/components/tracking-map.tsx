@@ -167,8 +167,8 @@ export default function TrackingMap({ from, to, shipmentId }: TrackingMapProps) 
 
         if (fromCoords && toCoords) {
             const fitAndDrawRoute = async () => {
-                // Fetch real driving route from Mapbox Directions API
-                const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${fromCoords.lng},${fromCoords.lat};${toCoords.lng},${toCoords.lat}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+                // Fetch real driving route with traffic from Mapbox Directions API (driving-traffic)
+                const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${fromCoords.lng},${fromCoords.lat};${toCoords.lng},${toCoords.lat}?geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
                 try {
                     const response = await fetch(url);
                     const data = await response.json();

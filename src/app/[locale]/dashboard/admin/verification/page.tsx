@@ -1,11 +1,11 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { collection, query, where, doc, updateDoc, orderBy, getDocs, Timestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, ShieldCheck, AlertTriangle, UserCheck, CheckCircle, FileText, Briefcase, Eye, ExternalLink, XCircle } from "lucide-react"
+import { Loader2, ShieldCheck, AlertTriangle, UserCheck, CheckCircle, FileText, Briefcase, Eye, ExternalLink, XCircle, ChevronDown, ChevronUp } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { format } from "date-fns"
@@ -57,85 +57,59 @@ const DocumentDetail = ({
   docInfo: DocumentInfo | undefined
   onApprove?: () => void
   onReject?: () => void
-}) => (
+}) => {
+  const isRejected = docInfo?.status === 'rejected';
+  const isApproved = docInfo?.status === 'approved';
+  
+  return (
     <div className={cn(
-      "p-3.5 rounded-2xl border flex flex-col justify-between bg-slate-900/40 min-h-[145px] transition-all",
+      "p-3 rounded-xl border flex items-center justify-between transition-all gap-4 text-xs bg-white dark:bg-[#070A13]",
       docInfo?.url 
-        ? (docInfo.status === 'rejected' ? "border-red-500/35 bg-red-500/5 text-red-300" : docInfo.status === 'approved' ? "border-emerald-500/20" : "border-indigo-500/20") 
-        : "border-red-500/20"
+        ? (isRejected ? "border-red-500/35 bg-red-500/5 text-slate-900 dark:text-slate-100" : isApproved ? "border-emerald-500/25 bg-emerald-500/5 text-slate-900 dark:text-slate-100" : "border-slate-200 dark:border-slate-800") 
+        : "border-red-500/20 bg-red-500/5"
     )}>
-        <div className="flex items-center justify-between">
-            <span className="font-bold text-xs text-foreground flex items-center gap-1.5">
-              <FileText className={cn("h-3.5 w-3.5", docInfo?.url ? "text-indigo-400" : "text-red-400")} />
-              {title}
-            </span>
-            {docInfo?.url ? (
-              <div className="flex items-center gap-2">
-                 {docInfo.status === 'approved' && <span className="text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Validé</span>}
-                 {docInfo.status === 'rejected' && <span className="text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Rejeté</span>}
-                 {docInfo.status === 'processing' && <span className="text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 animate-pulse">Analyse...</span>}
-                 {docInfo.status === 'pending' && <span className="text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">En attente</span>}
-                 <Button asChild variant="outline" size="sm" className="h-7 rounded-lg border-border/50 hover:bg-slate-800 text-[10px] font-bold">
-                    <a href={docInfo.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                      Visualiser <ExternalLink size={10} />
-                    </a>
-                </Button>
-              </div>
-            ) : (
-                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">Manquant</span>
-            )}
+      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <FileText className={cn("h-4 w-4 shrink-0", docInfo?.url ? "text-indigo-600 dark:text-indigo-400" : "text-red-500 dark:text-red-400")} />
+        <div className="min-w-0 flex-1">
+          <p className="font-bold text-slate-900 dark:text-slate-200 truncate">{title}</p>
+          {docInfo?.url ? (
+            <p className="text-[10px] text-slate-600 dark:text-slate-400 font-mono mt-0.5 truncate">
+              N°: {docInfo.docNumber || 'N/A'} {docInfo.expiryDate && `| Exp: ${format(docInfo.expiryDate.toDate(), 'dd/MM/yyyy')}`}
+            </p>
+          ) : (
+            <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5 font-semibold">Pièce manquante</p>
+          )}
         </div>
-        {docInfo?.url ? (
-            <div className="text-[10px] space-y-1 pt-2 border-t border-border/20 mt-2 font-medium">
-                 <p className="flex justify-between"><span className="text-muted-foreground">Numéro:</span> <span className="font-mono text-foreground font-semibold">{docInfo.docNumber || 'N/A'}</span></p>
-                 {docInfo.issueDate && <p className="flex justify-between"><span className="text-muted-foreground">Émis le:</span> <span className="text-foreground">{format(docInfo.issueDate.toDate(), 'dd/MM/yyyy')}</span></p>}
-                 <p className="flex justify-between"><span className="text-muted-foreground">Expire le:</span> <span className="text-foreground">{docInfo.expiryDate ? format(docInfo.expiryDate.toDate(), 'dd/MM/yyyy') : 'N/A'}</span></p>
-                 {docInfo.confidence !== undefined && (
-                   <p className="flex justify-between">
-                     <span className="text-muted-foreground">Confiance IA:</span>
-                     <span className={cn(
-                       "font-bold",
-                       docInfo.confidence >= 80 ? "text-emerald-400" : docInfo.confidence >= 50 ? "text-amber-400" : "text-rose-400"
-                     )}>
-                       {docInfo.confidence}%
-                     </span>
-                   </p>
-                 )}
-                 {docInfo.status === 'rejected' && docInfo.rejectionReason && (
-                   <p className="text-[9px] text-red-400 mt-1 leading-normal font-semibold border-t border-red-500/10 pt-1">Raison: {docInfo.rejectionReason}</p>
-                 )}
-                 {docInfo.warnings && docInfo.warnings.length > 0 && (
-                    <div className="text-[9px] text-amber-400 mt-1 border-t border-amber-500/10 pt-1 space-y-0.5">
-                      <p className="font-bold flex items-center gap-0.5">
-                        <AlertTriangle size={10} className="shrink-0" /> Alertes IA :
-                      </p>
-                      <ul className="list-disc list-inside text-muted-foreground/80">
-                        {docInfo.warnings.map((w, idx) => (
-                          <li key={idx} className="truncate" title={w}>{w}</li>
-                        ))}
-                      </ul>
-                    </div>
-                 )}
+      </div>
 
-                 {/* Admin Actions */}
-                 {docInfo.status !== 'approved' && onApprove && onReject && (
-                   <div className="flex gap-1.5 pt-2 border-t border-border/10 mt-2">
-                     <Button size="sm" onClick={onApprove} className="h-6 rounded-lg text-[9px] bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 flex-grow font-bold border border-emerald-500/20">
-                       Accepter
-                     </Button>
-                     <Button size="sm" onClick={onReject} variant="outline" className="h-6 rounded-lg text-[9px] text-red-400 hover:bg-red-500/10 hover:text-red-400 flex-grow font-bold border-red-500/20">
-                       Rejeter
-                     </Button>
-                   </div>
-                 )}
+      {docInfo?.url && (
+        <div className="flex items-center gap-2 shrink-0">
+          {/* Status Badge */}
+          {isApproved && <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">Validé</span>}
+          {isRejected && <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/25" title={docInfo.rejectionReason}>Rejeté</span>}
+          {docInfo.status === 'pending' && <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25">En attente</span>}
+          
+          <Button asChild size="sm" variant="outline" className="h-7 px-2.5 rounded-lg border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-transparent">
+            <a href={docInfo.url} target="_blank" rel="noopener noreferrer">
+              Voir
+            </a>
+          </Button>
+
+          {!isApproved && onApprove && onReject && (
+            <div className="flex gap-1.5">
+              <Button size="sm" onClick={onApprove} className="h-7 px-2.5 rounded-lg text-[10px] bg-emerald-600 hover:bg-emerald-500 text-white font-bold">
+                Accepter
+              </Button>
+              <Button size="sm" onClick={onReject} variant="outline" className="h-7 px-2.5 rounded-lg text-[10px] text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/10 bg-white dark:bg-transparent">
+                Rejeter
+              </Button>
             </div>
-        ) : (
-          <div className="text-[10px] text-muted-foreground/60 italic pt-2 border-t border-border/10 mt-2">
-            Non renseigné par le transporteur.
-          </div>
-        )}
+          )}
+        </div>
+      )}
     </div>
-);
+  );
+};
 
 const getRoleLabel = (role: string) => {
     switch (role) {
@@ -175,6 +149,34 @@ export default function AdminVerificationPage() {
   }, []);
 
   useEffect(() => { fetchUnverified(); }, [fetchUnverified]);
+
+  const isUserReadyForVerification = useCallback((u: any) => {
+    const docs = u.documents || {};
+    const isTransporter = u.role === 'transporter';
+    const isClient = u.role === 'client';
+    const isTransporterCompany = u.role === 'transporter-company';
+    
+    if (isTransporter) {
+        return Object.keys(transporterDocumentTypes).every(key => docs[key as DocumentKey]?.status === 'approved');
+    } else if (isClient) {
+        return docs.identityCard?.status === 'approved';
+    } else if (isTransporterCompany) {
+        const companyDocs = u.companyDocuments || {};
+        const requiredCompanyKeys = ['rccm', 'nif', 'fleetInsurance', 'taxCertificate', 'socialSecurity'];
+        return requiredCompanyKeys.every(key => companyDocs[key]?.status === 'approved');
+    }
+    return true; 
+  }, []);
+
+  const sortedUserDocs = useMemo(() => {
+    return [...userDocs].sort((a, b) => {
+      const aReady = isUserReadyForVerification(a);
+      const bReady = isUserReadyForVerification(b);
+      if (aReady && !bReady) return -1;
+      if (!aReady && bReady) return 1;
+      return 0;
+    });
+  }, [userDocs, isUserReadyForVerification]);
 
   const handleVerify = async (userId: string) => {
     try {
@@ -244,104 +246,167 @@ export default function AdminVerificationPage() {
   }
 
   const UserVerificationCard = ({ user }: { user: any }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
     const documents = user.documents || {};
     const isTransporter = user.role === 'transporter';
     const isClient = user.role === 'client';
     const isTransporterCompany = user.role === 'transporter-company';
     
     let allDocumentsUploaded = false;
+    let totalRequiredCount = 0;
+    let approvedCount = 0;
+
     if (isTransporter) {
-        allDocumentsUploaded = Object.keys(transporterDocumentTypes).every(key => documents[key as DocumentKey]?.status === 'approved');
+        totalRequiredCount = 5;
+        const keys: DocumentKey[] = ['identityCard', 'license', 'insurance', 'carteGrise', 'technicalVisit'];
+        approvedCount = keys.filter(k => documents[k]?.status === 'approved').length;
+        allDocumentsUploaded = approvedCount === totalRequiredCount;
     } else if (isClient) {
-        allDocumentsUploaded = documents.identityCard?.status === 'approved';
+        totalRequiredCount = 1;
+        approvedCount = documents.identityCard?.status === 'approved' ? 1 : 0;
+        allDocumentsUploaded = approvedCount === totalRequiredCount;
     } else if (isTransporterCompany) {
+        totalRequiredCount = 5;
         const companyDocs = user.companyDocuments || {};
         const requiredCompanyKeys = ['rccm', 'nif', 'fleetInsurance', 'taxCertificate', 'socialSecurity'];
-        allDocumentsUploaded = requiredCompanyKeys.every(key => companyDocs[key]?.status === 'approved');
+        approvedCount = requiredCompanyKeys.filter(key => companyDocs[key]?.status === 'approved').length;
+        allDocumentsUploaded = approvedCount === totalRequiredCount;
     } else {
         allDocumentsUploaded = true; 
     }
 
+    // AI recommendation status calculation
+    let aiRecommendationText = "Dossier incomplet";
+    let aiBadgeStyle = "bg-red-500/10 text-red-400 border border-red-500/20";
+
+    if (allDocumentsUploaded) {
+      aiRecommendationText = "Approbation Suggérée (Confiance > 90%)";
+      aiBadgeStyle = "bg-emerald-500/10 text-emerald-400 border border-emerald-500/25";
+    } else if (approvedCount > 0) {
+      // Check if there are any warning values in the document objects
+      const hasWarnings = Object.values(documents).some((d: any) => d?.warnings && d.warnings.length > 0) || 
+                          Object.values(user.companyDocuments || {}).some((d: any) => d?.warnings && d.warnings.length > 0);
+      if (hasWarnings) {
+        aiRecommendationText = "Audit requis (Alerte IA détectée)";
+        aiBadgeStyle = "bg-rose-500/10 text-rose-400 border border-rose-500/25";
+      } else {
+        aiRecommendationText = "Audit manuel recommandé";
+        aiBadgeStyle = "bg-amber-500/10 text-amber-400 border border-amber-500/25";
+      }
+    }
+
     return (
-        <Card className="shadow-lg rounded-3xl border border-border/50 bg-card/65 backdrop-blur-md overflow-hidden transition-all hover:scale-[1.005]">
-            <CardHeader className="pb-4 border-b border-border/20 bg-slate-950/20">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <Card className="shadow-md rounded-2xl border border-slate-200 dark:border-slate-800/50 bg-white dark:bg-[#0B0F19]/45 overflow-hidden transition-all">
+            <CardHeader className="p-4 bg-slate-50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800/40">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                      <div className="flex items-center gap-3">
-                        <Avatar className="h-11 w-11 border border-border/50">
-                            <AvatarFallback className="bg-indigo-500/10 text-indigo-400 font-bold text-sm">
+                        <Avatar className="h-10 w-10 border border-slate-200 dark:border-border/50">
+                            <AvatarFallback className="bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold text-xs">
                                 {`${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'US'}
                             </AvatarFallback>
                         </Avatar>
                         <div>
                             <div className="flex flex-wrap items-center gap-2">
-                                <CardTitle className="text-base font-bold text-foreground">{user.companyName || `${user.firstName} ${user.lastName}`}</CardTitle>
-                                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-indigo-400 border border-border/30">{getRoleLabel(user.role)}</span>
+                                <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100">{user.companyName || `${user.firstName} ${user.lastName}`}</CardTitle>
+                                <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-slate-800/80 text-indigo-600 dark:text-indigo-400 border border-indigo-100/60 dark:border-border/30">{getRoleLabel(user.role)}</span>
                             </div>
-                            <CardDescription className="text-xs font-mono text-muted-foreground/80 mt-0.5">{user.email}</CardDescription>
+                            <CardDescription className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">{user.email}</CardDescription>
                         </div>
                      </div>
                     
-                     <Button 
-                       onClick={() => handleVerify(user.id)} 
-                       disabled={!allDocumentsUploaded}
-                       className="rounded-xl font-bold bg-primary hover:bg-primary/95 text-white"
-                     >
-                        <UserCheck className="mr-2 h-4 w-4"/>
-                        Valider l&apos;Utilisateur
-                     </Button>
+                     <div className="flex items-center gap-3 flex-wrap">
+                        {totalRequiredCount > 0 && (
+                          <div className="text-left md:text-right shrink-0">
+                            <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">{approvedCount}/{totalRequiredCount} validés</p>
+                            <div className="w-20 bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden mt-1">
+                              <div className="bg-indigo-500 h-full transition-all duration-300" style={{ width: `${(approvedCount / totalRequiredCount) * 100}%` }} />
+                            </div>
+                          </div>
+                        )}
+
+                        <Badge className={cn("text-[9px] uppercase tracking-wider px-2 py-0.5 font-bold rounded shrink-0", aiBadgeStyle)}>
+                          {aiRecommendationText}
+                        </Badge>
+
+                        <div className="flex items-center gap-2">
+                          <Button 
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl h-8 text-[11px] font-bold text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 bg-white dark:bg-transparent"
+                          >
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5 mr-1" /> : <ChevronDown className="w-3.5 h-3.5 mr-1" />}
+                            {isExpanded ? "Masquer" : "Inspecter"}
+                          </Button>
+
+                          <Button 
+                            onClick={() => handleVerify(user.id)} 
+                            disabled={!allDocumentsUploaded}
+                            size="sm"
+                            className="rounded-xl h-8 font-bold bg-primary hover:bg-primary/95 text-white text-[11px]"
+                          >
+                            <UserCheck className="mr-1.5 h-3.5 w-3.5"/>
+                            Valider le compte
+                          </Button>
+                        </div>
+                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4 pt-5">
-                {(isTransporter || isClient || isTransporterCompany) && (
-                  <div>
-                    <h4 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-3">Auditer les pièces justificatives</h4>
-                    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                        {isTransporter ? (
-                          (Object.keys(transporterDocumentTypes) as DocumentKey[]).map(key => (
-                              <DocumentDetail
-                                key={key}
-                                title={transporterDocumentTypes[key]}
-                                docInfo={documents[key]}
-                                onApprove={() => handleApproveDoc(user.id, key, false, transporterDocumentTypes[key])}
-                                onReject={() => handleRejectDoc(user.id, key, false, transporterDocumentTypes[key])}
-                              />
-                          ))
-                        ) : isClient ? (
-                           <DocumentDetail
-                             title="Pièce d'identité"
-                             docInfo={documents.identityCard}
-                             onApprove={() => handleApproveDoc(user.id, 'identityCard', false, "Pièce d'identité")}
-                             onReject={() => handleRejectDoc(user.id, 'identityCard', false, "Pièce d'identité")}
-                           />
-                        ) : isTransporterCompany ? (
-                           Object.keys(companyDocumentTypes).map(key => (
-                              <DocumentDetail
-                                key={key}
-                                title={companyDocumentTypes[key]}
-                                docInfo={user.companyDocuments?.[key]}
-                                onApprove={() => handleApproveDoc(user.id, key, true, companyDocumentTypes[key])}
-                                onReject={() => handleRejectDoc(user.id, key, true, companyDocumentTypes[key])}
-                              />
-                           ))
-                        ) : null}
-                    </div>
-                  </div>
-                )}
-                 {user.role.includes('company') && (
-                    <div className="p-3.5 rounded-2xl border border-border/30 bg-slate-900/40 space-y-1">
-                        <h4 className="font-bold text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 mb-2"><Briefcase size={14} className="text-sky-400" /> Informations Légales</h4>
-                        <p className="text-xs font-medium"><span className="text-muted-foreground">Registre du Commerce (RCCM):</span> <span className="font-mono text-foreground font-bold">{user.rccm || 'Non renseigné'}</span></p>
-                        <p className="text-xs font-medium"><span className="text-muted-foreground">Adresse administrative:</span> <span className="text-foreground">{user.address || 'Non renseignée'}</span></p>
-                    </div>
-                 )}
 
-                {!allDocumentsUploaded && (
-                    <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 text-xs font-semibold flex items-center gap-2 border border-amber-500/20">
-                        <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0"/>
-                        Tous les justificatifs obligatoires n&apos;ont pas encore été téléversés et approuvés.
+            {isExpanded && (
+              <CardContent className="p-4 space-y-4 pt-4 border-t border-slate-100 dark:border-border/10 bg-slate-50/50 dark:bg-slate-950/10">
+                  {(isTransporter || isClient || isTransporterCompany) && (
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider">Pièces justificatives requises</h4>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                          {isTransporter ? (
+                            (Object.keys(transporterDocumentTypes) as DocumentKey[]).map(key => (
+                                <DocumentDetail
+                                  key={key}
+                                  title={transporterDocumentTypes[key]}
+                                  docInfo={documents[key]}
+                                  onApprove={() => handleApproveDoc(user.id, key, false, transporterDocumentTypes[key])}
+                                  onReject={() => handleRejectDoc(user.id, key, false, transporterDocumentTypes[key])}
+                                />
+                            ))
+                          ) : isClient ? (
+                             <DocumentDetail
+                               title="Pièce d'identité"
+                               docInfo={documents.identityCard}
+                               onApprove={() => handleApproveDoc(user.id, 'identityCard', false, "Pièce d'identité")}
+                               onReject={() => handleRejectDoc(user.id, 'identityCard', false, "Pièce d'identité")}
+                             />
+                          ) : isTransporterCompany ? (
+                             Object.keys(companyDocumentTypes).map(key => (
+                                <DocumentDetail
+                                  key={key}
+                                  title={companyDocumentTypes[key]}
+                                  docInfo={user.companyDocuments?.[key]}
+                                  onApprove={() => handleApproveDoc(user.id, key, true, companyDocumentTypes[key])}
+                                  onReject={() => handleRejectDoc(user.id, key, true, companyDocumentTypes[key])}
+                                />
+                             ))
+                          ) : null}
+                      </div>
                     </div>
-                )}
-            </CardContent>
+                  )}
+
+                   {user.role.includes('company') && (
+                      <div className="p-3 rounded-xl border border-border/20 bg-[#070A13] space-y-1 max-w-xl">
+                          <h4 className="font-bold text-[10px] text-muted-foreground uppercase tracking-wider flex items-center gap-1.5 mb-1.5"><Briefcase size={12} className="text-sky-400" /> Informations Légales</h4>
+                          <p className="text-xs font-medium"><span className="text-muted-foreground">Registre du Commerce (RCCM):</span> <span className="font-mono text-foreground font-bold">{user.rccm || 'Non renseigné'}</span></p>
+                          <p className="text-xs font-medium"><span className="text-muted-foreground">Adresse administrative:</span> <span className="text-foreground">{user.address || 'Non renseignée'}</span></p>
+                      </div>
+                   )}
+
+                  {!allDocumentsUploaded && (
+                      <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 text-[11px] font-semibold flex items-center gap-2 border border-amber-500/20 max-w-xl">
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0"/>
+                          Certaines pièces justificatives obligatoires n&apos;ont pas encore été téléversées et approuvées pour permettre la validation finale.
+                      </div>
+                  )}
+              </CardContent>
+            )}
         </Card>
     )
   }
@@ -380,8 +445,8 @@ export default function AdminVerificationPage() {
             </div>
            )}
 
-           <div className="grid gap-6">
-                {userDocs.map(user => (
+           <div className="grid gap-4">
+                {sortedUserDocs.map(user => (
                     <UserVerificationCard key={user.id} user={user} />
                 ))}
            </div>

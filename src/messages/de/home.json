@@ -134,5 +134,21 @@
   "transporter_feat3_title": "Kostenloses Flottenmanagement",
   "transporter_feat3_desc": "Registrieren Sie Ihre Lkw, weisen Sie Ihren Fahrern Fahrten zu und verwalten Sie die Pläne ganz einfach.",
   "transporter_feat4_title": "Erhöhte Online-Sichtbarkeit",
-  "transporter_feat4_desc": "Veröffentlichen Sie Ihre Fahrzeuge in unserer öffentlichen Galerie, damit Kunden Sie direkt kontaktieren können."
+  "transporter_feat4_desc": "Veröffentlichen Sie Ihre Fahrzeuge in unserer öffentlichen Galerie, damit Kunden Sie direkt kontaktieren können.",
+  "nav_docs": "Dokumentation",
+  "docs_hero_badge": "Hilfe-Center & Offizielle Dokumentation",
+  "docs_hero_title": "Vollständige TransConnekt Dokumentation",
+  "docs_hero_desc": "Schlagen Sie im offiziellen Benutzerhandbuch nach, entdecken Sie Schritt-für-Schritt-Anleitungen und laden Sie druckbare Formate herunter.",
+  "docs_btn_print": "Drucken / PDF",
+  "docs_btn_download_html": "HTML herunterladen",
+  "docs_btn_download_md": "Markdown herunterladen (.MD)",
+  "docs_card1_title": "Absender-Leitfäden",
+  "docs_card1_desc": "Erstellung von Anfragen, GPS-Paketverfolgung und Angebotsbestätigung.",
+  "docs_card2_title": "Frachtführer-Bereich",
+  "docs_card2_desc": "Konformitäts-Audit (250k GNF), 2,5 % Provision und Frachtangebote.",
+  "docs_card3_title": "Verfolgung & API",
+  "docs_card3_desc": "Echtzeit-GPS-Verfolgung in allen 33 Präfekturen Guineas.",
+  "docs_viewer_title": "Interaktives Benutzerhandbuch v1.0",
+  "docs_btn_fullscreen": "Vollbild öffnen",
+  "docs_btn_back": "Seite Wie es funktioniert"
 }
