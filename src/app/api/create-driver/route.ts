@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     phone = sanitizePhoneNumber(phone || '');
     companyName = stripHtml(companyName || '').trim();
 
-    if (!firstName || !lastName || !email || !password || !companyId) {
+    if (!firstName || !lastName || !email || !password) {
       return NextResponse.json({ error: 'Champs requis manquants.' }, { status: 400 });
     }
 
@@ -52,9 +52,10 @@ export async function POST(req: NextRequest) {
       lastName,
       phone,
       role: 'transporter',
-      companyId,
-      companyName,
+      companyId: companyId || uid,
+      companyName: companyName || `${firstName} ${lastName}`,
       isPlaceholder: false,
+      tempPassword: password, // Store temporary password for onboarding handoff
       createdAt: new Date().toISOString(),
       status: 'disponible',
     });

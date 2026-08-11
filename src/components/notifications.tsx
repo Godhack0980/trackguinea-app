@@ -144,23 +144,40 @@ export default function Notifications() {
                             <Loader2 className="animate-spin" />
                          </div>
                        ) : optimisticNotifications.length > 0 ? (
-                            optimisticNotifications.slice(0, 10).map(notif => (
-                                <PopoverClose asChild key={notif.id}>
-                                    <Link
-                                        href={notif.href}
-                                        onClick={() => handleMarkAsRead(notif.id)}
-                                        className={`flex items-start gap-4 p-2 rounded-md hover:bg-muted/50 ${!notif.isRead ? 'bg-primary/10' : ''}`}>
-                                        
-                                        {!notif.isRead && <span className="flex h-2 w-2 mt-1.5 shrink-0 rounded-full bg-sky-500" />}
-                                        <div className="grid gap-1 flex-1">
-                                            <p className={`text-sm ${!notif.isRead ? 'font-semibold' : ''}`}>{translateNotificationMessage(notif.message, lang)}</p>
-                                            <p className="text-xs text-muted-foreground">
-                                                {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true, locale: lang === 'fr' ? fr : enUS }) : ''}
-                                            </p>
-                                        </div>
-                                    </Link>
-                                </PopoverClose>
-                            ))
+                            optimisticNotifications.slice(0, 10).map(notif => {
+                                // Smart fallback target URL calculation if href is generic
+                                let targetHref = notif.href || "/dashboard/notifications";
+                                if (!notif.href || notif.href === "/dashboard/notifications") {
+                                  const msg = (notif.message || '').toLowerCase();
+                                  if (msg.includes("course") || msg.includes("livraison") || msg.includes("demande") || msg.includes("fret")) {
+                                    targetHref = "/dashboard/admin/requests";
+                                  } else if (msg.includes("document") || msg.includes("véritable") || msg.includes("vérification")) {
+                                    targetHref = "/dashboard/admin/verification";
+                                  } else if (msg.includes("retrait") || msg.includes("séquestre") || msg.includes("paiement")) {
+                                    targetHref = "/dashboard/admin/finances";
+                                  } else if (msg.includes("chauffeur") || msg.includes("conducteur")) {
+                                    targetHref = "/dashboard/transporter-company/drivers";
+                                  }
+                                }
+
+                                return (
+                                  <PopoverClose asChild key={notif.id}>
+                                      <Link
+                                          href={targetHref}
+                                          onClick={() => handleMarkAsRead(notif.id)}
+                                          className={`flex items-start gap-4 p-2 rounded-md hover:bg-muted/50 ${!notif.isRead ? 'bg-primary/10' : ''}`}>
+                                          
+                                          {!notif.isRead && <span className="flex h-2 w-2 mt-1.5 shrink-0 rounded-full bg-sky-500" />}
+                                          <div className="grid gap-1 flex-1">
+                                              <p className={`text-sm ${!notif.isRead ? 'font-semibold' : ''}`}>{translateNotificationMessage(notif.message, lang)}</p>
+                                              <p className="text-xs text-muted-foreground">
+                                                  {notif.createdAt ? formatDistanceToNow(notif.createdAt.toDate(), { addSuffix: true, locale: lang === 'fr' ? fr : enUS }) : ''}
+                                              </p>
+                                          </div>
+                                      </Link>
+                                  </PopoverClose>
+                                );
+                            })
                        ) : (
                          <p className="text-sm text-center text-muted-foreground p-4">{lang === 'fr' ? "Aucune nouvelle notification." : "No new notifications."}</p>
                        )}

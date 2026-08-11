@@ -623,15 +623,15 @@ export default function AdminMap({
             const isActive = activeLayers[b.type];
             const count = layerCounts[b.type] || 0;
 
-            // Vibrant color palette per layer type
-            let activeStyle = "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-500/20";
-            if (b.type === "vehicles") activeStyle = "bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-500/20";
-            else if (b.type === "shipments") activeStyle = "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-500/20";
-            else if (b.type === "drivers") activeStyle = "bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-500/20";
-            else if (b.type === "stations") activeStyle = "bg-sky-600 text-white border-sky-500 shadow-md shadow-sky-500/20";
-            else if (b.type === "garages") activeStyle = "bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-500/20";
-            else if (b.type === "parkings") activeStyle = "bg-fuchsia-600 text-white border-fuchsia-500 shadow-md shadow-fuchsia-500/20";
-            else if (b.type === "customs") activeStyle = "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20";
+            // Soft, elegant pastel color palette per layer type
+            let activeStyle = "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800 shadow-sm";
+            if (b.type === "vehicles") activeStyle = "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 shadow-sm";
+            else if (b.type === "shipments") activeStyle = "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800 shadow-sm";
+            else if (b.type === "drivers") activeStyle = "bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800 shadow-sm";
+            else if (b.type === "stations") activeStyle = "bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-800 shadow-sm";
+            else if (b.type === "garages") activeStyle = "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800 shadow-sm";
+            else if (b.type === "parkings") activeStyle = "bg-fuchsia-50 dark:bg-fuchsia-950/60 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-300 dark:border-fuchsia-800 shadow-sm";
+            else if (b.type === "customs") activeStyle = "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-800 shadow-sm";
 
             return (
               <button

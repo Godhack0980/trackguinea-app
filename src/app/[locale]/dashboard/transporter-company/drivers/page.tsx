@@ -378,12 +378,27 @@ export default function CompanyDriversPage() {
                                     <Input id="driverPhone" type="tel" placeholder="+224 6XX XX XX XX" value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label htmlFor="driverPassword">Mot de passe temporaire *</Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="driverPassword">Mot de passe temporaire *</Label>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const rand = Math.floor(100000 + Math.random() * 900000);
+                                                const genPass = `Tc-${rand}`;
+                                                setForm(f => ({...f, password: genPass}));
+                                                setShowDriverPassword(true);
+                                                toast({ title: "Mot de passe généré", description: `Mot de passe temporaire: ${genPass}` });
+                                            }}
+                                            className="text-[10px] font-bold text-indigo-400 hover:underline"
+                                        >
+                                            ⚡ Générer auto
+                                        </button>
+                                    </div>
                                     <div className="relative">
                                         <Input 
                                             id="driverPassword" 
                                             type={showDriverPassword ? "text" : "password"} 
-                                            placeholder="Min. 8 caractères" 
+                                            placeholder="Min. 8 caractères (ex: Tc-784192)" 
                                             value={form.password} 
                                             onChange={e => setForm(f => ({...f, password: e.target.value}))} 
                                             className="pr-10"
@@ -475,6 +490,11 @@ export default function CompanyDriversPage() {
                                             <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                                                 <span className="flex items-center gap-1.5 font-mono"><Mail size={12} className="text-indigo-400" /> {d.email}</span>
                                                 {d.phone && <span className="flex items-center gap-1.5"><Phone size={12} className="text-sky-400" /> {d.phone}</span>}
+                                                {d.tempPassword && (
+                                                    <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 w-max mt-0.5">
+                                                        🔑 Pass: {d.tempPassword}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="p-4">{getStatusBadge(d)}</td>

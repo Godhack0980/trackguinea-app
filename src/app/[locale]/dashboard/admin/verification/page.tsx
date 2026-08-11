@@ -411,6 +411,22 @@ export default function AdminVerificationPage() {
     )
   }
 
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredUserDocs = useMemo(() => {
+    return sortedUserDocs.filter(user => {
+      const term = searchTerm.trim().toLowerCase();
+      if (!term) return true;
+      const fullName = `${user.firstName || ''} ${user.lastName || ''} ${user.displayName || ''} ${user.name || ''} ${user.companyName || ''}`.toLowerCase();
+      return (
+        user.id.toLowerCase().includes(term) ||
+        fullName.includes(term) ||
+        (user.email || '').toLowerCase().includes(term) ||
+        (user.phone || '').toLowerCase().includes(term)
+      );
+    });
+  }, [sortedUserDocs, searchTerm]);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border/40 pb-5">
@@ -423,9 +439,23 @@ export default function AdminVerificationPage() {
       </div>
 
       <Card className="shadow-xl rounded-3xl border border-border/50 bg-card/60 backdrop-blur-md overflow-hidden">
-        <CardHeader className="border-b border-border/20 pb-4">
-          <CardTitle className="text-lg font-bold text-foreground">Dossiers administratifs à instruire</CardTitle>
-          <CardDescription>Auditez les scans des pièces officielles et activez les comptes qualifiés.</CardDescription>
+        <CardHeader className="border-b border-border/20 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <CardTitle className="text-lg font-bold text-foreground">Dossiers administratifs à instruire</CardTitle>
+            <CardDescription>Auditez les scans des pièces officielles et activez les comptes qualifiés.</CardDescription>
+          </div>
+
+          {/* Search bar by Name & User ID */}
+          <div className="relative min-w-[260px]">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Rechercher par nom, email, ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 h-9 w-full rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white"
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-6 pt-6">
            {loading && (
@@ -435,18 +465,20 @@ export default function AdminVerificationPage() {
            )}
            {error && <p className="text-destructive text-center font-semibold">Erreur: {error.message}</p>}
            
-           {!loading && userDocs.length === 0 && (
+           {!loading && filteredUserDocs.length === 0 && (
             <div className="text-center py-16 text-muted-foreground bg-slate-900/30 rounded-3xl border border-border/40 gap-3 flex flex-col items-center">
                 <CheckCircle className="h-12 w-12 text-emerald-500" />
                 <div>
-                  <p className="font-bold text-foreground text-lg">Aucun dossier en attente</p>
-                  <p className="text-sm text-muted-foreground max-w-xs mt-1">Tous les utilisateurs actuellement inscrits ont été audités et validés.</p>
+                  <p className="font-bold text-foreground text-lg">Aucun dossier trouvé</p>
+                  <p className="text-sm text-muted-foreground max-w-xs mt-1">
+                    {searchTerm ? "Aucun utilisateur ne correspond à votre recherche." : "Tous les utilisateurs actuellement inscrits ont été audités et validés."}
+                  </p>
                 </div>
             </div>
            )}
 
            <div className="grid gap-4">
-                {sortedUserDocs.map(user => (
+                {filteredUserDocs.map(user => (
                     <UserVerificationCard key={user.id} user={user} />
                 ))}
            </div>
