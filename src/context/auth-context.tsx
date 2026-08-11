@@ -4,7 +4,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, DocumentData } from 'firebase/firestore';
+import { doc, getDoc, setDoc, DocumentData } from 'firebase/firestore';
 import type { User as FirebaseUser } from 'firebase/auth';
 
 interface AppUser extends FirebaseUser {
@@ -40,8 +40,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (docSnap.exists()) {
         setUserData(docSnap.data());
       } else {
-        setUserData(null);
-        console.warn(`User with UID ${uid} not found in Firestore.`);
+        // Fallback profile creation for drivers created via Auth or missing Firestore doc
+        const defaultProfile = {
+          uid,
+          email: authUser?.email || '',
+          firstName: authUser?.displayName ? authUser.displayName.split(' ')[0] : 'Conducteur',
+          lastName: authUser?.displayName ? authUser.displayName.split(' ').slice(1).join(' ') : '',
+          role: 'transporter',
+          status: 'disponible',
+          createdAt: new Date().toISOString()
+        };
+        try {
+          await setDoc(doc(db, 'users', uid), defaultProfile);
+          setUserData(defaultProfile);
+        } catch (e) {
+          setUserData(defaultProfile as any);
+        }
       }
     } catch (error) {
       console.error("Error fetching user data:", error);

@@ -55,28 +55,46 @@ export default function MissionChat({ shipmentId, missionNumber }: MissionChatPr
 
   // Listen to messages
   useEffect(() => {
-    if (!shipmentId) return;
+    if (!shipmentId) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     const messagesRef = collection(db, `shipments/${shipmentId}/messages`);
     const q = query(messagesRef, orderBy('timestamp', 'asc'));
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const msgs = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Message[];
-      setMessages(msgs);
-      setLoading(false);
+    // Safety timer to prevent infinite loading spinner
+    const timer = setTimeout(() => setLoading(false), 2500);
 
-      setTimeout(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-      }, 100);
-    });
+    const unsubscribe = onSnapshot(
+      q, 
+      (snapshot) => {
+        clearTimeout(timer);
+        const msgs = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Message[];
+        setMessages(msgs);
+        setLoading(false);
 
-    return () => unsubscribe();
+        setTimeout(() => {
+          if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+          }
+        }, 100);
+      },
+      (err) => {
+        clearTimeout(timer);
+        console.error("MissionChat onSnapshot error:", err);
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
   }, [shipmentId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

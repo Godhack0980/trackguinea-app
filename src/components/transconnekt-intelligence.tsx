@@ -307,9 +307,9 @@ export default function TransconnektIntelligence() {
           });
 
           // 2. Vehicle document expiry check (Real vehicle expiry dates)
-          let expiringVehicleName = "Remorque Plateau HOWO";
-          let expiringVehicleReg = "TG-118-C";
-          let expiringVehicleDays = 14;
+          let expiringVehicleName = "";
+          let expiringVehicleReg = "";
+          let expiringVehicleDays = 0;
           
           if (role === "transporter-company") {
             const vehiclesCollection = collection(db, "users", user.uid, "vehicles");
@@ -323,7 +323,7 @@ export default function TransconnektIntelligence() {
                 const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                 if (diffDays > 0 && diffDays < 45) {
                   expiringVehicleName = `${v.brand || ''} ${v.model || 'Camion'}`;
-                  expiringVehicleReg = v.registration || "TG-118-C";
+                  expiringVehicleReg = v.registration || "N/A";
                   expiringVehicleDays = diffDays;
                   break;
                 }
@@ -339,7 +339,7 @@ export default function TransconnektIntelligence() {
                 const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
                 if (diffDays > 0 && diffDays < 45) {
                   expiringVehicleName = key === "license" ? "Permis de conduire" : "Assurance véhicule";
-                  expiringVehicleReg = info.docNumber || "TG-118-C";
+                  expiringVehicleReg = info.docNumber || "Doc";
                   expiringVehicleDays = diffDays;
                   break;
                 }
@@ -347,13 +347,23 @@ export default function TransconnektIntelligence() {
             }
           }
 
-          list.push({
-            id: "transporter-expiry-1",
-            type: "compliance",
-            message: getTranslation("msg_transporter_insurance", { truck: expiringVehicleName, registration: expiringVehicleReg, days: expiringVehicleDays }),
-            actionText: getTranslation("intel_action_manage_fleet"),
-            actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
-          });
+          if (expiringVehicleName) {
+            list.push({
+              id: "transporter-expiry-1",
+              type: "compliance",
+              message: getTranslation("msg_transporter_insurance", { truck: expiringVehicleName, registration: expiringVehicleReg, days: expiringVehicleDays }),
+              actionText: getTranslation("intel_action_manage_fleet"),
+              actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
+            });
+          } else {
+            list.push({
+              id: "transporter-expiry-ok",
+              type: "compliance",
+              message: "✅ Tous vos documents de conformité et de flotte sont à jour.",
+              actionText: getTranslation("intel_action_manage_fleet"),
+              actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
+            });
+          }
 
           // 3. High demand corridor indicator (Real ax statistics)
           const allPendingQuery = query(requestsRef, where("status", "==", "En attente"));

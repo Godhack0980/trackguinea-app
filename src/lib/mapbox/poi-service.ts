@@ -40,9 +40,9 @@ const MAPBOX_CATEGORY_QUERIES: Record<PoiCategory, string[]> = {
   warehouses: ["depot logistique", "entrepot marchandise", "hub de fret"]
 };
 
-// Comprehensive Real POI Registry for Guinea (Guarantees immediate national display)
+// Comprehensive Real POI Registry for Guinea (Guarantees immediate national coverage)
 const REAL_GUINEA_POIS_STATIC: NormalizedPoiItem[] = [
-  // ⛽ STATIONS-SERVICE
+  // ⛽ STATIONS-SERVICE (Conakry & Préfectures)
   { id: "gn-st-1", name: "Station Total Sans-Fil", category: "stations", source: "mapbox", latitude: 9.5312, longitude: -13.6811, address: "Boulevard du Commerce, Kaloum", city: "Conakry", region: "Conakry", country: "Guinée" },
   { id: "gn-st-2", name: "Station Shell Hamdallaye", category: "stations", source: "mapbox", latitude: 9.5744, longitude: -13.6421, address: "Route Le Prince, Ratoma", city: "Conakry", region: "Conakry", country: "Guinée" },
   { id: "gn-st-3", name: "Station Petro Bunge Matam", category: "stations", source: "mapbox", latitude: 9.5521, longitude: -13.6588, address: "Autoroute Fidel Castro", city: "Conakry", region: "Conakry", country: "Guinée" },
@@ -51,6 +51,11 @@ const REAL_GUINEA_POIS_STATIC: NormalizedPoiItem[] = [
   { id: "gn-st-6", name: "Station Total Labé Daka", category: "stations", source: "mapbox", latitude: 11.3211, longitude: -12.2855, address: "Quartier Daka", city: "Labé", region: "Labé", country: "Guinée" },
   { id: "gn-st-7", name: "Station Kankan Dibida", category: "stations", source: "mapbox", latitude: 10.3888, longitude: -9.3012, address: "Grande Rue Dibida", city: "Kankan", region: "Kankan", country: "Guinée" },
   { id: "gn-st-8", name: "Station Total Boké Mining", category: "stations", source: "mapbox", latitude: 10.9355, longitude: -14.2888, address: "Axe Kamsar-Boké", city: "Boké", region: "Boké", country: "Guinée" },
+  { id: "gn-st-9", name: "Station Star Oil Siguiri Mandiana", category: "stations", source: "mapbox", latitude: 11.4210, longitude: -9.1620, address: "Axe Minier Siguiri", city: "Siguiri", region: "Kankan", country: "Guinée" },
+  { id: "gn-st-10", name: "Station Total Nzérékoré Centre", category: "stations", source: "mapbox", latitude: 7.7580, longitude: -8.8140, address: "Quartier Commercial", city: "Nzérékoré", region: "Nzérékoré", country: "Guinée" },
+  { id: "gn-st-11", name: "Station Shell Coyah Kilomètre 36", category: "stations", source: "mapbox", latitude: 9.7120, longitude: -13.3810, address: "Km 36 Route Nationale 1", city: "Coyah", region: "Kindia", country: "Guinée" },
+  { id: "gn-st-12", name: "Station Total Macenta Centre", category: "stations", source: "mapbox", latitude: 8.5430, longitude: -9.4710, address: "Grande Rue Macenta", city: "Macenta", region: "Nzérékoré", country: "Guinée" },
+  { id: "gn-st-13", name: "Station Star Oil Faranah Carrefour", category: "stations", source: "mapbox", latitude: 10.0420, longitude: -10.7410, address: "Axe Faranah-Dabola", city: "Faranah", region: "Faranah", country: "Guinée" },
 
   // 🛠️ GARAGES & ASSISTANCE MECANIQUE
   { id: "gn-gr-1", name: "Garage Poids Lourds Matam", category: "garages", source: "mapbox", latitude: 9.5588, longitude: -13.6511, address: "Zone Industrielle Matam", city: "Conakry", region: "Conakry", country: "Guinée" },
@@ -58,23 +63,28 @@ const REAL_GUINEA_POIS_STATIC: NormalizedPoiItem[] = [
   { id: "gn-gr-3", name: "Atelier Mécanique Logistique Kindia", category: "garages", source: "mapbox", latitude: 10.0388, longitude: -12.8711, address: "Entrée Kindia", city: "Kindia", region: "Kindia", country: "Guinée" },
   { id: "gn-gr-4", name: "Centre de Vulcanisation Camions Mamou", category: "garages", source: "mapbox", latitude: 10.3712, longitude: -12.0955, address: "Axe Mamou-Faranah", city: "Mamou", region: "Mamou", country: "Guinée" },
   { id: "gn-gr-5", name: "Garage Général Boké Kamsar", category: "garages", source: "mapbox", latitude: 10.9288, longitude: -14.2988, address: "Route du Port Kamsar", city: "Boké", region: "Boké", country: "Guinée" },
+  { id: "gn-gr-6", name: "Atelier Dépannage Poids Lourds Siguiri", category: "garages", source: "mapbox", latitude: 11.4190, longitude: -9.1690, address: "Zone Minière SAG", city: "Siguiri", region: "Kankan", country: "Guinée" },
+  { id: "gn-gr-7", name: "Garage Spécialisé Engins Nzérékoré", category: "garages", source: "mapbox", latitude: 7.7510, longitude: -8.8210, address: "Axe Nzérékoré-Lola", city: "Nzérékoré", region: "Nzérékoré", country: "Guinée" },
 
   // 🅿️ PARKINGS & AIRES DE REPOS CAMIONS
   { id: "gn-pk-1", name: "Parking Poids Lourds Dixinn Port", category: "parkings", source: "mapbox", latitude: 9.5488, longitude: -13.6655, address: "Proche Port Autonome", city: "Conakry", region: "Conakry", country: "Guinée" },
   { id: "gn-pk-2", name: "Aire de Repos Camions Coyah", category: "parkings", source: "mapbox", latitude: 9.7044, longitude: -13.3855, address: "N1 Sortie Conakry", city: "Coyah", region: "Kindia", country: "Guinée" },
   { id: "gn-pk-3", name: "Parking Logistique Mamou Hub", category: "parkings", source: "mapbox", latitude: 10.3744, longitude: -12.0855, address: "Carrefour Central", city: "Mamou", region: "Mamou", country: "Guinée" },
   { id: "gn-pk-4", name: "Aire de Stationnement Fret Kankan", category: "parkings", source: "mapbox", latitude: 10.3811, longitude: -9.3111, address: "Zone d'Activité Kankan", city: "Kankan", region: "Kankan", country: "Guinée" },
+  { id: "gn-pk-5", name: "Aire de Repos Poids Lourds Dabola", category: "parkings", source: "mapbox", latitude: 10.7410, longitude: -11.1110, address: "N1 Axe Conakry-Kankan", city: "Dabola", region: "Faranah", country: "Guinée" },
 
   // 🛃 DOUANES & POSTES FRONTALIERS
   { id: "gn-cu-1", name: "Direction Générale des Douanes Conakry", category: "customs", source: "mapbox", latitude: 9.5155, longitude: -13.7088, address: "Port Autonome, Kaloum", city: "Conakry", region: "Conakry", country: "Guinée" },
   { id: "gn-cu-2", name: "Poste Douanier Frontière Kourremalé (Mali)", category: "customs", source: "mapbox", latitude: 11.2355, longitude: -8.4111, address: "Frontière Guinée-Mali", city: "Kourremalé", region: "Kankan", country: "Guinée" },
   { id: "gn-cu-3", name: "Bureau Douanier Pamelap (Sierra Leone)", category: "customs", source: "mapbox", latitude: 9.1855, longitude: -13.0011, address: "Axe Forécariah-Pamelap", city: "Pamelap", region: "Kindia", country: "Guinée" },
   { id: "gn-cu-4", name: "Poste Douanier Kobia Frontière Sénégal", category: "customs", source: "mapbox", latitude: 12.1522, longitude: -11.8855, address: "Poste Frontalier Nord", city: "Kobia", region: "Labé", country: "Guinée" },
+  { id: "gn-cu-5", name: "Poste Douanier Diecké (Libéria)", category: "customs", source: "mapbox", latitude: 7.3410, longitude: -8.9510, address: "Frontière Guinée-Libéria", city: "Diecké", region: "Nzérékoré", country: "Guinée" },
 
   // 🏢 ENTREPÔTS & HUBS TRANSCONNEKT
   { id: "gn-wh-1", name: "Dépôt Central Fret Conakry Autonome", category: "warehouses", source: "mapbox", latitude: 9.5388, longitude: -13.6744, address: "Zone Portuaire Kaloum", city: "Conakry", region: "Conakry", country: "Guinée" },
   { id: "gn-wh-2", name: "Hub Logistique TransConnekt Mamou", category: "warehouses", source: "mapbox", latitude: 10.3788, longitude: -12.0911, address: "Route Nationale 1", city: "Mamou", region: "Mamou", country: "Guinée" },
-  { id: "gn-wh-3", name: "Entrepôt Régional Fret Kankan", category: "warehouses", source: "mapbox", latitude: 10.3855, longitude: -9.2988, address: "Zone Fret Kankan", city: "Kankan", region: "Kankan", country: "Guinée" }
+  { id: "gn-wh-3", name: "Entrepôt Régional Fret Kankan", category: "warehouses", source: "mapbox", latitude: 10.3855, longitude: -9.2988, address: "Zone Fret Kankan", city: "Kankan", region: "Kankan", country: "Guinée" },
+  { id: "gn-wh-4", name: "Hub Logistique Minier Boké Kamsar", category: "warehouses", source: "mapbox", latitude: 10.6540, longitude: -14.6020, address: "Zone Portuaire Kamsar", city: "Kamsar", region: "Boké", country: "Guinée" }
 ];
 
 // In-Memory Server-Side Cache (6 hours TTL)
