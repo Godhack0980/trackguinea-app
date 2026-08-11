@@ -288,14 +288,54 @@ export default function AdminMap({
     }
   }, [map, mapboxToken]);
 
-  // Select Job Handler
+  // Auto resize Mapbox canvas when sidebar toggles to eliminate white gaps
+  useEffect(() => {
+    if (!map) return;
+    const timer = setTimeout(() => {
+      try { map.resize(); } catch (e) {}
+    }, 320);
+    try { map.resize(); } catch (e) {}
+    return () => clearTimeout(timer);
+  }, [sidebarOpen, map]);
+
+  // Native Fullscreen API handler
+  const handleOpenFullscreen = () => {
+    const el = mapContainerRef.current;
+    if (el) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else {
+        el.requestFullscreen().then(() => {
+          setTimeout(() => map?.resize(), 200);
+        }).catch(() => {
+          window.open('/dashboard/admin/tracking', '_blank');
+        });
+      }
+    }
+  };
+
+  // Toggle route line drawing on click
   const handleSelectJob = (item: NormalizedLogisticsItem) => {
-    setSelectedJobId(item.id);
-    drawJobRoute(item);
-    toast({
-      title: `Mission ${item.name}`,
-      description: `Trajet ${item.metadata.origin || 'Départ'} → ${item.metadata.destination || 'Destination'}`
-    });
+    if (selectedJobId === item.id) {
+      // Clicked again -> Toggle OFF and erase route
+      setSelectedJobId(null);
+      if (map) {
+        if (map.getLayer('active-job-route-layer')) map.removeLayer('active-job-route-layer');
+        if (map.getSource('active-job-route')) map.removeSource('active-job-route');
+      }
+      if (destMarkerRef.current) {
+        destMarkerRef.current.remove();
+        destMarkerRef.current = null;
+      }
+      toast({ title: "Itinéraire effacé", description: "Le tracé d'itinéraire a été retiré de la carte." });
+    } else {
+      setSelectedJobId(item.id);
+      drawJobRoute(item);
+      toast({
+        title: `Mission ${item.name}`,
+        description: `Trajet ${item.metadata.origin || 'Départ'} → ${item.metadata.destination || 'Destination'}`
+      });
+    }
   };
 
   // Render Markers & Popups with safe DOM container checks
@@ -459,13 +499,6 @@ export default function AdminMap({
     toast({ title: "Données Actualisées", description: "Les données des véhicules en mission et POIs nationaux ont été rechargées." });
   };
 
-  // Open Fullscreen Map in new tab
-  const handleOpenFullscreen = () => {
-    if (typeof window !== 'undefined') {
-      window.open(window.location.href, '_blank');
-    }
-  };
-
   const layerButtons: { type: LayerType; label: string; icon: string }[] = [
     { type: "vehicles", label: "Véhicules (En mission)", icon: "🚚" },
     { type: "shipments", label: "Expéditions", icon: "📦" },
@@ -584,48 +617,21 @@ export default function AdminMap({
           </div>
         </div>
 
-        {/* 🌟 UNIQUE FILTER SHORTCUT BUTTONS */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-200 dark:border-slate-800/80">
-          <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 mr-1">
-            <Filter size={11} /> Afficher uniquement :
-          </span>
-          <button
-            onClick={() => handleSingleFilter("vehicles")}
-            className="text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"
-          >
-            🚚 Que Véhicules
-          </button>
-          <button
-            onClick={() => handleSingleFilter("shipments")}
-            className="text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center gap-1"
-          >
-            📦 Que Colis
-          </button>
-          <button
-            onClick={() => handleSingleFilter("stations")}
-            className="text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/30 flex items-center gap-1"
-          >
-            ⛽ Que Stations
-          </button>
-          <button
-            onClick={() => handleSingleFilter("garages")}
-            className="text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1"
-          >
-            🛠️ Que Garages
-          </button>
-          <button
-            onClick={() => handleSingleFilter("parkings")}
-            className="text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center gap-1"
-          >
-            🅿️ Que Parkings
-          </button>
-        </div>
-
-        {/* 11 Layer Buttons Grid */}
-        <div className="flex flex-wrap gap-1.5 pt-1">
+        {/* 11 Layer Buttons Grid with Rich Color Framing */}
+        <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200 dark:border-slate-800/80">
           {layerButtons.map((b) => {
             const isActive = activeLayers[b.type];
             const count = layerCounts[b.type] || 0;
+
+            // Vibrant color palette per layer type
+            let activeStyle = "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-500/20";
+            if (b.type === "vehicles") activeStyle = "bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-500/20";
+            else if (b.type === "shipments") activeStyle = "bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-500/20";
+            else if (b.type === "drivers") activeStyle = "bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-500/20";
+            else if (b.type === "stations") activeStyle = "bg-sky-600 text-white border-sky-500 shadow-md shadow-sky-500/20";
+            else if (b.type === "garages") activeStyle = "bg-amber-600 text-white border-amber-500 shadow-md shadow-amber-500/20";
+            else if (b.type === "parkings") activeStyle = "bg-fuchsia-600 text-white border-fuchsia-500 shadow-md shadow-fuchsia-500/20";
+            else if (b.type === "customs") activeStyle = "bg-blue-600 text-white border-blue-500 shadow-md shadow-blue-500/20";
 
             return (
               <button
@@ -633,10 +639,10 @@ export default function AdminMap({
                 type="button"
                 onClick={() => setActiveLayers(prev => ({ ...prev, [b.type]: !prev[b.type] }))}
                 className={cn(
-                  "text-[10px] font-bold px-2.5 py-1 rounded-xl border transition-all select-none flex items-center gap-1.5",
+                  "text-[10px] font-extrabold px-3 py-1.5 rounded-xl border transition-all duration-200 select-none flex items-center gap-1.5 shadow-sm",
                   isActive
-                    ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                    : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800"
+                    ? activeStyle
+                    : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
                 )}
               >
                 <span>{b.icon}</span>

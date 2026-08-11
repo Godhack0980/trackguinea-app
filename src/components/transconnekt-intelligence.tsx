@@ -213,7 +213,7 @@ export default function TransconnektIntelligence() {
               type: "opportunity",
               message: getTranslation("msg_client_new_offers", { count: bidsSnap.size > 0 ? bidsSnap.size : 2, nature: activeReqData.nature || "Fret" }),
               actionText: getTranslation("intel_action_view_offer"),
-              actionPath: "/dashboard/client/requests"
+              actionPath: `/dashboard/client/requests?id=${activeClientReq.id}`
             });
             
             // 2. Cost Savings Recommendation (Real-backed)
@@ -243,7 +243,7 @@ export default function TransconnektIntelligence() {
               type: "saving",
               message: getTranslation("msg_client_savings", { amount: savingsAmount.toLocaleString(lang === 'en' ? 'en-US' : 'fr-FR'), carrier: savingsCarrier }),
               actionText: getTranslation("intel_action_view_offer"),
-              actionPath: "/dashboard/client/requests"
+              actionPath: `/dashboard/client/requests?id=${activeClientReq.id}`
             });
           }
 
@@ -252,17 +252,18 @@ export default function TransconnektIntelligence() {
           const activeClientSnap = await getDocs(activeClientQuery);
 
           if (activeClientSnap.size > 0) {
-            const firstActive = activeClientSnap.docs[0].data();
-            const carrierName = firstActive.driverName || firstActive.transporterName || "Diallo Transport";
-            const fromCity = firstActive.from || "Conakry";
-            const toCity = firstActive.to || "Labé";
+            const firstActive = activeClientSnap.docs[0];
+            const firstActiveData = firstActive.data();
+            const carrierName = firstActiveData.driverName || firstActiveData.transporterName || "Diallo Transport";
+            const fromCity = firstActiveData.from || "Conakry";
+            const toCity = firstActiveData.to || "Labé";
             
             list.push({
               id: "client-stalled-1",
               type: "alert",
               message: getTranslation("msg_client_delay_risk", { carrier: carrierName, from: fromCity, to: toCity }),
               actionText: getTranslation("intel_action_track"),
-              actionPath: "/dashboard/client/tracking"
+              actionPath: `/dashboard/client/tracking?id=${firstActive.id}`
             });
           } else {
             // General active tracking if no personal active shipment

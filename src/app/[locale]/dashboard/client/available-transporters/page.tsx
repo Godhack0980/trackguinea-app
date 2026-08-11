@@ -99,7 +99,30 @@ export default function AvailableTransportersPage() {
         orderBy('lastName', 'asc')
       );
       const snap = await getDocs(q);
-      setTransporters(snap.docs.map(d => ({ id: d.id, ...d.data() } as Transporter)));
+
+      // Fetch active shipments to mark transporters/drivers currently in mission
+      const busyIds = new Set<string>();
+      try {
+        const activeReqsSnap = await getDocs(query(collection(db, 'requests'), where('status', 'in', ['En cours', 'en_route', 'en_chargement', 'in_progress'])));
+        activeReqsSnap.docs.forEach(doc => {
+          const d = doc.data();
+          if (d.transporterId) busyIds.add(d.transporterId);
+          if (d.driverId) busyIds.add(d.driverId);
+        });
+      } catch (err) {
+        console.warn("Could not fetch active requests for busy status:", err);
+      }
+
+      setTransporters(snap.docs.map(d => {
+        const data = d.data();
+        const isBusyInMission = busyIds.has(d.id);
+        return {
+          id: d.id,
+          ...data,
+          jobsInProgress: isBusyInMission ? 1 : (data.jobsInProgress || 0),
+          isAvailable: isBusyInMission ? false : (data.isAvailable !== false)
+        } as Transporter;
+      }));
     } catch (e: any) {
       console.error("Error loading transporters:", e);
       setError(e);

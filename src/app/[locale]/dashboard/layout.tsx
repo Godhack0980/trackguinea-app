@@ -21,6 +21,7 @@ import {
   SidebarInset,
 } from "@/components/ui/sidebar"
 import Logo from "@/components/logo"
+import TopLoadingBar from "@/components/top-loading-bar"
 import {
   LogOut,
   ChevronDown,
@@ -418,6 +419,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
+      <TopLoadingBar />
       <div className="flex min-h-screen w-full max-w-full overflow-hidden">
         <Sidebar className="border-r border-indigo-950/20">
           <SidebarHeader className="border-b border-white/5 py-4 px-6 bg-slate-950/20">

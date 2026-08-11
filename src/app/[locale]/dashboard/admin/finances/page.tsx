@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { createNotification } from "@/lib/notifications";
+import { cn } from "@/lib/utils";
 
 interface Withdrawal {
   id: string;
@@ -181,34 +182,58 @@ export default function AdminFinancesPage() {
     }
   };
 
+  const [activeCardFilter, setActiveCardFilter] = useState<'all' | 'escrow' | 'commission' | 'subscription' | 'withdrawal'>('all');
+
   return (
     <div className="p-6 space-y-6">
-      <div className="border-b border-border/40 pb-5">
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
-          <Landmark className="text-primary" /> Supervision Financière
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">Surveillez les dépôts séquestres, encaissez les commissions et arbitrez les retraits de gains.</p>
+      <div className="border-b border-border/40 pb-5 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground flex items-center gap-2.5">
+            <Landmark className="text-primary" /> Supervision Financière
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Surveillez les dépôts séquestres, encaissez les commissions et arbitrez les retraits de gains.</p>
+        </div>
+        {activeCardFilter !== 'all' && (
+          <Button variant="outline" size="sm" onClick={() => setActiveCardFilter('all')} className="rounded-xl text-xs gap-1.5 border-indigo-500/30 text-indigo-400">
+            <Receipt className="w-3.5 h-3.5" /> Réinitialiser le filtre
+          </Button>
+        )}
       </div>
 
-      {/* Admin financial stats */}
+      {/* Admin financial stats cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Séquestres en cours", value: `${stats.totalEscrow.toLocaleString("fr-FR")} GNF`, sub: "Fonds clients bloqués", icon: <Coins size={16}/>, color: "text-amber-400", bg: "bg-amber-500/10" },
-          { label: "Commissions cumulées", value: `${stats.totalCommissions.toLocaleString("fr-FR")} GNF`, sub: "Gains nets TransConnekt", icon: <Landmark size={16}/>, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Abonnements Actifs", value: stats.activeSubscriptions.toString(), sub: "Membres Flotte Pro", icon: <ShieldCheck size={16}/>, color: "text-indigo-400", bg: "bg-indigo-500/10" },
-          { label: "Retraits en attente", value: `${stats.pendingWithdrawalsAmount.toLocaleString("fr-FR")} GNF`, sub: `${withdrawals.filter(w=>w.status==='pending').length} demandes`, icon: <Wallet size={16}/>, color: "text-sky-400", bg: "bg-sky-500/10" },
-        ].map(k => (
-          <Card key={k.label} className="shadow-lg rounded-2xl border-border/50 bg-card/60 backdrop-blur-md">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-bold text-muted-foreground">{k.label}</CardTitle>
-              <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${k.bg} ${k.color}`}>{k.icon}</span>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl font-extrabold text-foreground leading-tight">{k.value}</div>
-              <p className="text-xs text-muted-foreground mt-1 font-medium">{k.sub}</p>
-            </CardContent>
-          </Card>
-        ))}
+          { key: 'escrow', label: "Séquestres en cours", value: `${stats.totalEscrow.toLocaleString("fr-FR")} GNF`, sub: "Fonds clients bloqués", icon: <Coins size={16}/>, color: "text-amber-400", bg: "bg-amber-500/10" },
+          { key: 'commission', label: "Commissions cumulées", value: `${stats.totalCommissions.toLocaleString("fr-FR")} GNF`, sub: "Gains nets TransConnekt", icon: <Landmark size={16}/>, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+          { key: 'subscription', label: "Abonnements Actifs", value: stats.activeSubscriptions.toString(), sub: "Membres Flotte Pro", icon: <ShieldCheck size={16}/>, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+          { key: 'withdrawal', label: "Retraits en attente", value: `${stats.pendingWithdrawalsAmount.toLocaleString("fr-FR")} GNF`, sub: `${withdrawals.filter(w=>w.status==='pending').length} demandes`, icon: <Wallet size={16}/>, color: "text-sky-400", bg: "bg-sky-500/10" },
+        ].map(k => {
+          const isSelected = activeCardFilter === k.key;
+          return (
+            <Card 
+              key={k.key} 
+              onClick={() => setActiveCardFilter(isSelected ? 'all' : (k.key as any))}
+              className={cn(
+                "shadow-lg rounded-2xl border-border/50 bg-card/60 backdrop-blur-md cursor-pointer transition-all duration-300 hover:scale-[1.02]",
+                isSelected && "ring-2 ring-indigo-500 border-indigo-500 bg-indigo-500/10 shadow-indigo-500/20"
+              )}
+            >
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <CardTitle className="text-sm font-bold text-muted-foreground">{k.label}</CardTitle>
+                <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${k.bg} ${k.color}`}>{k.icon}</span>
+              </CardHeader>
+              <CardContent>
+                <div className="text-xl font-extrabold text-foreground leading-tight">{k.value}</div>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-muted-foreground font-medium">{k.sub}</p>
+                  <span className="text-[10px] font-bold text-indigo-400 underline">
+                    {isSelected ? "Affichage filtré ✓" : "Cliquer pour détails →"}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
