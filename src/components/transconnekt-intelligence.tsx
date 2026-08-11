@@ -19,6 +19,7 @@ export default function TransconnektIntelligence() {
   
   const [recommendations, setRecommendations] = useState<IntelligenceInsight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (loadingAuth || !user || !userData) return;
@@ -96,6 +97,14 @@ export default function TransconnektIntelligence() {
 
   return (
     <Card className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-slate-950 via-slate-900/95 to-indigo-950/40 p-6 shadow-2xl backdrop-blur-md">
+      {/* Top progress bar when navigating */}
+      {navigatingId && (
+        <div className="absolute top-0 left-0 right-0 h-1 bg-indigo-950 overflow-hidden z-20">
+          <div className="h-full bg-gradient-to-r from-indigo-500 via-sky-400 to-emerald-400 animate-pulse w-full" />
+        </div>
+      )}
+
+      {/* Dynamic aurore glow behind content */}
       <div className="absolute -right-32 -top-32 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
       <div className="absolute -left-32 -bottom-32 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
@@ -201,14 +210,25 @@ export default function TransconnektIntelligence() {
                   <Button
                     size="sm"
                     variant="ghost"
+                    disabled={navigatingId === rec.id}
                     onClick={() => {
+                      setNavigatingId(rec.id);
                       const target = rec.actionPath.startsWith('/') ? `/${lang}${rec.actionPath}` : rec.actionPath;
                       router.push(target);
                     }}
-                    className="text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-xl gap-1 py-1 h-8 group-hover:translate-x-0.5 transition-all"
+                    className="text-xs font-bold text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-xl gap-1.5 py-1 h-8 group-hover:translate-x-0.5 transition-all"
                   >
-                    {rec.actionText}
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                    {navigatingId === rec.id ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Chargement...
+                      </>
+                    ) : (
+                      <>
+                        {rec.actionText}
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>

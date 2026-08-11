@@ -376,33 +376,33 @@ export default function AvailableOffersComponent() {
               <Card 
                 key={req.id} 
                 className={cn(
-                  "shadow-md rounded-2xl border bg-slate-900/50 backdrop-blur-md transition-all duration-300 hover:translate-x-1",
+                  "shadow-md rounded-2xl border backdrop-blur-md transition-all duration-300 hover:translate-x-1 bg-card text-card-foreground",
                   isClosest 
-                    ? "border-emerald-500/40 ring-1 ring-emerald-500/20 shadow-emerald-500/5 text-white" 
-                    : "border-slate-800/80 hover:border-indigo-500/30 text-white"
+                    ? "border-emerald-500/60 ring-2 ring-emerald-500/30 shadow-emerald-500/10" 
+                    : "border-border/80 hover:border-indigo-500/40"
                 )}
               >
                 <CardContent className="p-4 flex justify-between items-start gap-3">
                   <div className="space-y-1.5 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-bold text-white truncate">{req.nature}</p>
+                      <p className="text-sm font-extrabold text-slate-900 dark:text-slate-100 truncate">{req.nature}</p>
                       {isClosest && (
-                        <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold rounded-full py-0 px-1.5 animate-pulse">
+                        <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[9px] font-bold rounded-full py-0 px-1.5 animate-pulse">
                           {t('available_offers.closest_badge')}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-slate-300 flex items-center gap-1">
-                      <MapPin size={12} className="text-indigo-400 shrink-0" />
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1">
+                      <MapPin size={13} className="text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span>{req.from} → {req.to}</span>
                     </p>
-                    <div className="flex items-center gap-3 text-[10px] text-slate-400 font-semibold">
+                    <div className="flex items-center gap-3 text-[10px] text-slate-600 dark:text-slate-400 font-bold">
                       {req.weight && <span>{t('available_offers.weight_label', { weight: req.weight })}</span>}
                       {req.distance && <span>{t('available_offers.distance_label', { distance: req.distance })}</span>}
                     </div>
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end justify-between h-full gap-2">
-                    <p className={cn("text-xs font-extrabold", isClosest ? "text-emerald-400" : "text-indigo-400")}>
+                    <p className={cn("text-xs font-black", isClosest ? "text-emerald-600 dark:text-emerald-400" : "text-indigo-600 dark:text-indigo-400")}>
                       {req.price ? `${req.price.toLocaleString("fr-FR")} GNF` : t('available_offers.price_debated')}
                     </p>
                     <Button 
@@ -410,10 +410,10 @@ export default function AvailableOffersComponent() {
                       onClick={() => handleApply(req)}
                       disabled={applyingId === req.id || (currentUser && req.applicants && req.applicants.includes(currentUser.uid))}
                       className={cn(
-                        "h-7 text-[10px] font-bold rounded-lg px-2.5 border-0",
+                        "h-7 text-[10px] font-bold rounded-lg px-2.5 border-0 shadow-sm transition-all",
                         (currentUser && req.applicants && req.applicants.includes(currentUser.uid))
-                          ? "bg-slate-800 text-slate-400 cursor-not-allowed" 
-                          : "bg-primary hover:bg-primary/95 text-white"
+                          ? "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 cursor-not-allowed" 
+                          : "bg-primary hover:bg-primary/90 text-primary-foreground font-extrabold"
                       )}
                     >
                       {applyingId === req.id ? t('available_offers.btn_applying') : (

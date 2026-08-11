@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { LogIn, UserPlus, Menu, X, ChevronDown } from 'lucide-react';
+import { LogIn, UserPlus, Menu, X, ChevronDown, HelpCircle, FileText, MessageSquareQuote, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/lib/translations';
 import type { Language } from '@/lib/translations';
 
@@ -20,16 +20,22 @@ const LANGUAGES: { code: Language; flag: string; label: string; name: string }[]
   { code: 'zh', flag: '🇨🇳', label: 'ZH', name: '中文' },
 ];
 
-/* ─── Nav links config (keys map to home.json nav_* keys) ─── */
-const NAV_KEYS: { href: string; key: string; fallbackFr: string }[] = [
+/* ─── Main Nav links config ─── */
+const MAIN_NAV: { href: string; key: string; fallbackFr: string }[] = [
   { href: '/',             key: 'nav_home',         fallbackFr: 'Accueil' },
-  { href: '/services',     key: 'nav_services',     fallbackFr: 'Nos Services' },
-  { href: '/offers',       key: 'nav_offers',       fallbackFr: 'Offres & Fret' },
+  { href: '/services',     key: 'nav_services',     fallbackFr: 'Services' },
+  { href: '/offers',       key: 'nav_offers',       fallbackFr: 'Offres' },
   { href: '/fleet',        key: 'nav_vehicles',     fallbackFr: 'Flotte' },
-  { href: '/how-it-works', key: 'nav_how',          fallbackFr: 'Comment ça marche' },
-  { href: '/docs',         key: 'nav_docs',         fallbackFr: 'Documentation' },
+];
+
+const RESOURCE_NAV = [
+  { href: '/how-it-works', key: 'nav_how', fallbackFr: 'Comment ça marche', icon: HelpCircle, desc: 'Guide étape par étape' },
+  { href: '/docs', key: 'nav_docs', fallbackFr: 'Documentation', icon: FileText, desc: 'Guides & API logistique' },
+  { href: '/testimonials', key: 'nav_testimonials', fallbackFr: 'Témoignages', icon: MessageSquareQuote, desc: 'Avis et retours clients' },
+];
+
+const SECONDARY_NAV: { href: string; key: string; fallbackFr: string }[] = [
   { href: '/why-us',       key: 'nav_why',          fallbackFr: 'Pourquoi nous' },
-  { href: '/testimonials', key: 'nav_testimonials', fallbackFr: 'Témoignages' },
   { href: '/contact',      key: 'nav_contact',      fallbackFr: 'Contact' },
 ];
 
@@ -78,8 +84,7 @@ export default function SharedHeader() {
     return link.fallbackFr;
   };
 
-  /* Home page: transparent → indigo on scroll. All other pages: always indigo */
-  const showDark = !isHome || scrolled;
+  const isResourceActive = RESOURCE_NAV.some(r => pathname === r.href);
 
   return (
     <header
@@ -93,8 +98,68 @@ export default function SharedHeader() {
 
         {/* Desktop: Nav + Buttons on right */}
         <div className="flex items-center gap-2 md:gap-4">
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
-            {NAV_KEYS.map(link => (
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
+            {/* Main Nav Items */}
+            {MAIN_NAV.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`nav-link text-xs lg:text-sm font-medium transition-all duration-300 px-3 py-1.5 rounded-full ${
+                  pathname === link.href
+                    ? 'text-white bg-primary/20 border border-primary/30 shadow-inner'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                {getNavLabel(link)}
+              </Link>
+            ))}
+
+            {/* Ressources Hover Dropdown */}
+            <div className="relative group">
+              <button
+                type="button"
+                className={`flex items-center gap-1 text-xs lg:text-sm font-medium transition-all duration-300 px-3 py-1.5 rounded-full ${
+                  isResourceActive
+                    ? 'text-white bg-primary/20 border border-primary/30 shadow-inner'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <span>Ressources</span>
+                <ChevronDown className="h-3.5 w-3.5 opacity-70 group-hover:rotate-180 transition-transform duration-300" />
+              </button>
+
+              {/* Glassmorphic Hover Panel */}
+              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 translate-y-2 transition-all duration-200 ease-out z-50 min-w-[240px]">
+                <div className="bg-[#2d2b4e]/95 border border-white/20 rounded-2xl p-2.5 shadow-2xl backdrop-blur-2xl ring-1 ring-black/10 space-y-1">
+                  {RESOURCE_NAV.map(item => {
+                    const IconComp = item.icon;
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-start gap-3 p-2.5 rounded-xl transition-all duration-150 group/item ${
+                          isActive
+                            ? 'bg-primary/25 text-white border border-primary/30'
+                            : 'hover:bg-white/10 text-white/80 hover:text-white'
+                        }`}
+                      >
+                        <span className="p-2 rounded-lg bg-white/10 group-hover/item:bg-primary/30 group-hover/item:scale-110 transition-all text-indigo-300">
+                          <IconComp size={16} />
+                        </span>
+                        <div>
+                          <p className="text-xs font-bold leading-tight">{getNavLabel(item)}</p>
+                          <p className="text-[10px] text-white/50 group-hover/item:text-white/70 mt-0.5">{item.desc}</p>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Secondary Nav Items */}
+            {SECONDARY_NAV.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -181,13 +246,13 @@ export default function SharedHeader() {
         }`}
       >
         <div className="bg-[#4a486e]/95 backdrop-blur-xl border-t border-[#4a486e]/20 px-4 py-3 space-y-2">
-          {NAV_KEYS.map(link => (
+          {[...MAIN_NAV, ...RESOURCE_NAV, ...SECONDARY_NAV].map(link => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
               className={`block text-sm font-medium py-2.5 border-b border-white/10 last:border-0 transition-colors ${
-                pathname === link.href ? 'text-white' : 'text-white/70 hover:text-white'
+                pathname === link.href ? 'text-white font-bold' : 'text-white/70 hover:text-white'
               }`}
             >
               {getNavLabel(link)}

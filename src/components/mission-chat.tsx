@@ -119,23 +119,27 @@ export default function MissionChat({ shipmentId, missionNumber }: MissionChatPr
     const text = newMessage.trim();
     setNewMessage('');
     
-    const fileUrl = fileBase64 || undefined;
-    const fileName = selectedFile?.name || undefined;
-    
+    const payload: Record<string, any> = {
+      senderId: user.uid,
+      senderName: currentUserName,
+      senderRole: currentUserRole,
+      text,
+      timestamp: Timestamp.now(),
+    };
+
+    if (fileBase64) {
+      payload.fileUrl = fileBase64;
+    }
+    if (selectedFile?.name) {
+      payload.fileName = selectedFile.name;
+    }
+
     // Clear file selection
     setSelectedFile(null);
     setFileBase64(null);
 
     try {
-      await addDoc(collection(db, `shipments/${shipmentId}/messages`), {
-        senderId: user.uid,
-        senderName: currentUserName,
-        senderRole: currentUserRole,
-        text,
-        timestamp: Timestamp.now(),
-        fileUrl,
-        fileName,
-      });
+      await addDoc(collection(db, `shipments/${shipmentId}/messages`), payload);
     } catch (err) {
       console.error("Error sending mission message:", err);
     } finally {
