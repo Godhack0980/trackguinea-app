@@ -35,11 +35,11 @@ const g = (typeof window !== 'undefined' ? window : global) as any;
 
 const auth = g.firebase_auth || getAuth(app);
 
-// Firestore: Enable auto-detect long polling and resilient offline fallback
+// Firestore: Enable auto-detect long polling on client, clean getFirestore on server
 let db: Firestore;
 if (g.firebase_db) {
   db = g.firebase_db;
-} else {
+} else if (typeof window !== "undefined") {
   try {
     db = initializeFirestore(app, {
       experimentalAutoDetectLongPolling: true
@@ -47,6 +47,8 @@ if (g.firebase_db) {
   } catch (e) {
     db = getFirestore(app);
   }
+} else {
+  db = getFirestore(app);
 }
 
 const storage = g.firebase_storage || getStorage(app);

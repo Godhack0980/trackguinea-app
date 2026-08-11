@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getFirestore } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { applyRateLimit } from '@/lib/rate-limit';
 import { stripHtml, sanitizePhoneNumber } from '@/lib/sanitizer';
@@ -38,13 +38,14 @@ export async function POST(req: NextRequest) {
     // 3. Initialize a secondary client app to avoid signing out the current user session
     const tempApp = getApps().find(app => app.name === 'temp-driver-create') || initializeApp(firebaseConfig, 'temp-driver-create');
     const tempAuth = getAuth(tempApp);
+    const tempDb = getFirestore(tempApp);
 
     // 4. Create user with email and password using the secondary Auth instance
     const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
     const uid = userCredential.user.uid;
 
     // 5. Create Firestore profile for this driver
-    const userDocRef = doc(db, 'users', uid);
+    const userDocRef = doc(tempDb, 'users', uid);
     await setDoc(userDocRef, {
       uid,
       email,

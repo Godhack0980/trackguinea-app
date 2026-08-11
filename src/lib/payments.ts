@@ -113,9 +113,9 @@ export async function releaseEscrowPayment(requestId: string, transporterId: str
   // Also update associated Shipment if present
   try {
     const shipmentRef = doc(db, 'shipments', requestId);
-    await updateDoc(shipmentRef, { status: 'livre', lastUpdated: Date.now() });
+    await setDoc(shipmentRef, { status: 'livre', lastUpdated: Date.now() }, { merge: true });
   } catch (e) {
-    // Ignore if shipment document is not created yet
+    console.warn("Could not update shipment status:", e);
   }
 
   // 2. Credit Transporter's wallet balance safely (setDoc with merge so it creates fields if missing)
