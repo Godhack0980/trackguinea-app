@@ -4,18 +4,19 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import { useTranslation } from "@/lib/translations";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, limit, Timestamp } from "firebase/firestore";
+import { collection, query, where, onSnapshot, limit } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Brain, AlertCircle, AlertTriangle, TrendingUp, Landmark, ShieldAlert, ArrowRight, Loader2, Navigation } from "lucide-react";
+import { Sparkles, AlertCircle, AlertTriangle, Landmark, ShieldAlert, ArrowRight, Loader2, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FRENCH_FALLBACKS, dicts, type Language } from "@/lib/translations";
+import { FRENCH_FALLBACKS } from "@/lib/translations";
 
-interface Recommendation {
+export interface Recommendation {
   id: string;
   type: "attention" | "alert" | "saving" | "tracking" | "compliance" | "opportunity";
+  priority: number; // 1 = Critical, 2 = High, 3 = Medium, 4 = Info
   message: string;
   actionText: string;
   actionPath: string;
@@ -37,20 +38,20 @@ const LOCAL_INTEL_MAP: Record<string, string> = {
   intel_action_manage_fleet: "Gérer la flotte",
   intel_action_view_requests: "Voir les demandes",
   intel_action_view_missions: "Voir les missions",
-  msg_admin_verification: "🔴 {count} inscriptions d'entreprises nécessitent votre validation administrative.",
-  msg_admin_stalled: "📍 Le chauffeur {driver} ({truck}) n'a pas progressé depuis {minutes} minutes.",
-  msg_admin_pending_requests: "⚠️ {count} demandes de transport sont en attente d'attribution depuis plus de 2 heures.",
-  msg_client_savings: "💰 Vous pourriez économiser environ {amount} GNF en choisissant l'offre de {carrier}.",
-  msg_client_delay_risk: "⚠️ Le transporteur {carrier} présente un risque de retard élevé pour votre livraison de {from} à {to}.",
-  msg_client_new_offers: "💡 {count} nouvelles offres de transporteurs ont été soumises pour votre demande '{nature}'.",
-  msg_transporter_matches: "💡 {count} missions correspondent à votre flotte.",
-  msg_transporter_insurance: "📄 L'assurance ou la visite technique de votre camion {truck} ({registration}) expire dans {days} jours.",
-  msg_transporter_demand: "📈 Forte demande de fret enregistrée sur l'axe {route} (+{percent}% de gains potentiels)."
+  msg_admin_verification: "🔴 {count} inscription(s) d'entreprise(s) nécessite(nt) votre validation administrative.",
+  msg_admin_stalled: "📍 Le camion {truck} ({driver}) n'a émis aucun signal GPS depuis {minutes} minutes.",
+  msg_admin_pending_requests: "⚠️ {count} demande(s) de transport en attente d'attribution par les transporteurs.",
+  msg_client_savings: "💰 Économie potentielle de {amount} GNF calculée en sélectionnant la meilleure offre pour '{nature}'.",
+  msg_client_delay_risk: "⚠️ Signalement d'incident ou retard potentiel détecté pour la livraison '{nature}'.",
+  msg_client_new_offers: "💡 {count} offre(s) de transporteur reçue(s) pour votre demande '{nature}'.",
+  msg_transporter_matches: "💡 {count} demande(s) de fret disponible(s) correspondent à vos axes de transport.",
+  msg_transporter_insurance: "📄 Le document '{truck}' ({registration}) expire dans {days} jour(s).",
+  msg_transporter_demand: "📈 Forte demande de fret enregistrée sur l'axe {route} ({count} cargaison(s) en attente)."
 };
 
 export default function TransconnektIntelligence() {
   const { user, userData, loadingAuth } = useAuth();
-  const { t, lang } = useTranslation();
+  const { lang } = useTranslation();
   const router = useRouter();
   
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -58,7 +59,7 @@ export default function TransconnektIntelligence() {
 
   const getTranslation = (key: string, vars?: Record<string, string | number>) => {
     const lk = key.toLowerCase();
-    let raw: string = LOCAL_INTEL_MAP[lk] || (FRENCH_FALLBACKS && FRENCH_FALLBACKS[lk]) || key;
+    let raw: string = LOCAL_INTEL_MAP[lk] || (FRENCH_FALLBACKS && (FRENCH_FALLBACKS as any)[lk]) || key;
 
     if (vars) {
       Object.entries(vars).forEach(([k, v]) => {
@@ -71,347 +72,222 @@ export default function TransconnektIntelligence() {
   useEffect(() => {
     if (loadingAuth || !user || !userData) return;
 
-    let active = true;
     setLoading(true);
+    const role = userData.role || "client";
+    const unsubscribes: Array<() => void> = [];
+    const insightsMap = new Map<string, Recommendation>();
 
-    const computeIntelligence = async () => {
-      const list: Recommendation[] = [];
-      const role = userData.role || "client";
+    const updateInsights = () => {
+      const sorted = Array.from(insightsMap.values())
+        .sort((a, b) => a.priority - b.priority)
+        .slice(0, 4);
+      setRecommendations(sorted);
+      setLoading(false);
+    };
 
-      try {
-        if (role === "admin") {
-          // 1. Fetch unverified users count (Real)
-          const usersRef = collection(db, "users");
-          const unverifiedQuery = query(usersRef, where("isVerified", "==", false), limit(20));
-          const unverifiedSnap = await getDocs(unverifiedQuery);
-          if (unverifiedSnap.size > 0) {
-            list.push({
-              id: "admin-verify",
+    try {
+      if (role === "admin") {
+        const unverifiedQ = query(collection(db, "users"), where("isVerified", "==", false), limit(25));
+        const unsubUnverified = onSnapshot(unverifiedQ, (snap) => {
+          if (snap.size > 0) {
+            insightsMap.set("admin-unverified", {
+              id: "admin-unverified",
               type: "attention",
-              message: getTranslation("msg_admin_verification", { count: unverifiedSnap.size }),
+              priority: 1,
+              message: getTranslation("msg_admin_verification", { count: snap.size }),
               actionText: getTranslation("intel_action_validate"),
               actionPath: "/dashboard/admin/verification"
             });
+          } else {
+            insightsMap.delete("admin-unverified");
           }
+          updateInsights();
+        }, (err) => console.error("Intel Admin unverified error:", err));
+        unsubscribes.push(unsubUnverified);
 
-          // 2. Fetch pending requests count (Real)
-          const requestsRef = collection(db, "requests");
-          const pendingQuery = query(requestsRef, where("status", "==", "En attente"), limit(20));
-          const pendingSnap = await getDocs(pendingQuery);
-          if (pendingSnap.size > 0) {
-            list.push({
+        const pendingQ = query(collection(db, "requests"), where("status", "==", "En attente"), limit(25));
+        const unsubPending = onSnapshot(pendingQ, (snap) => {
+          if (snap.size > 0) {
+            insightsMap.set("admin-pending", {
               id: "admin-pending",
               type: "alert",
-              message: getTranslation("msg_admin_pending_requests", { count: pendingSnap.size }),
+              priority: 2,
+              message: getTranslation("msg_admin_pending_requests", { count: snap.size }),
               actionText: getTranslation("intel_action_view_requests"),
               actionPath: "/dashboard/admin/requests"
             });
-          }
-
-          // 3. Stalled vehicle check (Real tracking records)
-          const activeQuery = query(requestsRef, where("status", "==", "En cours"), limit(5));
-          const activeSnap = await getDocs(activeQuery);
-          
-          let stalledReq = null;
-          let stalledMinutes = 47;
-          let stalledDriver = "Moussa Diallo";
-          let stalledTruck = "Mercedes Actros TG-240-B";
-
-          if (activeSnap.size > 0) {
-            stalledReq = activeSnap.docs[0].data();
-            stalledDriver = stalledReq.driverName || stalledReq.transporterName || "Moussa Diallo";
-            stalledTruck = stalledReq.vehicleType || stalledReq.truckModel || "Mercedes Actros TG-240-B";
-            
-            const lastUpdate = stalledReq.updatedAt || stalledReq.createdAt || Timestamp.now();
-            const elapsedMs = Date.now() - lastUpdate.toDate().getTime();
-            const elapsedMins = Math.floor(elapsedMs / 60000);
-            stalledMinutes = elapsedMins > 10 ? elapsedMins : 28;
           } else {
-            // Check any recent request to make fallback names match DB transporters
-            const anyQuery = query(requestsRef, limit(1));
-            const anySnap = await getDocs(anyQuery);
-            if (anySnap.size > 0) {
-              const anyReq = anySnap.docs[0].data();
-              stalledDriver = anyReq.driverName || anyReq.transporterName || "Moussa Diallo";
-              stalledTruck = anyReq.vehicleType || anyReq.truckModel || "Mercedes Actros TG-240-B";
-            }
+            insightsMap.delete("admin-pending");
           }
+          updateInsights();
+        }, (err) => console.error("Intel Admin pending error:", err));
+        unsubscribes.push(unsubPending);
 
-          list.push({
-            id: "admin-stalled-1",
-            type: "tracking",
-            message: getTranslation("msg_admin_stalled", { driver: stalledDriver, truck: stalledTruck, minutes: stalledMinutes }),
-            actionText: getTranslation("intel_action_track"),
-            actionPath: "/dashboard/admin/tracking"
-          });
-
-          // 4. Compliance alert (Real expired/expiring documents)
-          const transportersQuery = query(usersRef, where("role", "in", ["transporter", "transporter-company"]), limit(15));
-          const transportersSnap = await getDocs(transportersQuery);
-          
-          let expiringUser = null;
-          let expiringDays = 12;
-          let expiringTruck = "HOWO 371";
-          let expiringRegistration = "TG-832-A";
-
-          for (const doc of transportersSnap.docs) {
-            const uData = doc.data();
-            const docs = uData.documents || uData.companyDocuments || {};
-            for (const [key, dInfo] of Object.entries(docs)) {
-              const info = dInfo as any;
-              if (info?.expiryDate) {
-                const expDate = info.expiryDate.toDate ? info.expiryDate.toDate() : new Date(info.expiryDate);
-                const diffMs = expDate.getTime() - Date.now();
-                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                if (diffDays > 0 && diffDays < 45) {
-                  expiringUser = uData;
-                  expiringDays = diffDays;
-                  expiringTruck = key === "license" ? "Permis de conduire" : key === "fleetInsurance" ? "Assurance Flotte" : "Assurance véhicule";
-                  expiringRegistration = info.docNumber || "TG-832-A";
-                  break;
-                }
+        const activeQ = query(collection(db, "requests"), where("status", "==", "En cours"), limit(10));
+        const unsubActive = onSnapshot(activeQ, (snap) => {
+          let foundStalled = false;
+          snap.docs.forEach((docSnap) => {
+            const req = docSnap.data();
+            const lastTs = req.currentLocation?.timestamp || req.updatedAt?.seconds * 1000 || req.lastUpdated;
+            if (lastTs) {
+              const mins = Math.floor((Date.now() - Number(lastTs)) / 60000);
+              if (mins > 45) {
+                foundStalled = true;
+                const truck = req.vehicleRegistration || req.vehicleType || req.nature || "Camion";
+                const driver = req.driverName || req.transporterName || "Chauffeur";
+                insightsMap.set(`admin-stalled-${docSnap.id}`, {
+                  id: `admin-stalled-${docSnap.id}`,
+                  type: "tracking",
+                  priority: 1,
+                  message: getTranslation("msg_admin_stalled", { truck, driver, minutes: mins }),
+                  actionText: getTranslation("intel_action_track"),
+                  actionPath: "/dashboard/admin/tracking"
+                });
               }
             }
-            if (expiringUser) break;
-          }
-
-          if (!expiringUser && transportersSnap.size > 0) {
-            const uData = transportersSnap.docs[0].data();
-            expiringTruck = uData.companyName || `${uData.firstName} ${uData.lastName}` || "HOWO 371";
-            expiringRegistration = uData.rccm || "TG-832-A";
-          }
-
-          list.push({
-            id: "admin-insurance-1",
-            type: "compliance",
-            message: getTranslation("msg_transporter_insurance", { truck: expiringTruck, registration: expiringRegistration, days: expiringDays }),
-            actionText: getTranslation("intel_action_validate"),
-            actionPath: "/dashboard/admin/users"
           });
+          if (!foundStalled) {
+            Array.from(insightsMap.keys()).forEach((k) => {
+              if (k.startsWith("admin-stalled-")) insightsMap.delete(k);
+            });
+          }
+          updateInsights();
+        }, (err) => console.error("Intel Admin active error:", err));
+        unsubscribes.push(unsubActive);
 
-        } else if (role === "client" || role === "client-company") {
-          // 1. Fetch pending requests for client (Real)
-          const requestsRef = collection(db, "requests");
-          const clientPendingQuery = query(requestsRef, where("clientId", "==", user.uid), limit(5));
-          const clientPendingSnap = await getDocs(clientPendingQuery);
-
-          let hasPending = false;
-          let activeClientReq = null;
-
-          if (clientPendingSnap.size > 0) {
-            hasPending = true;
-            activeClientReq = clientPendingSnap.docs[0];
-            const activeReqData = activeClientReq.data();
-            
-            // Query bids for this request (Real)
-            const bidsRef = collection(db, "bids");
-            const bidsQuery = query(bidsRef, where("requestId", "==", activeClientReq.id), where("status", "==", "En attente"));
-            const bidsSnap = await getDocs(bidsQuery);
-            
-            list.push({
-              id: "client-offers-1",
+      } else if (role === "client" || role === "client-company") {
+        const clientReqQ = query(collection(db, "requests"), where("clientId", "==", user.uid), limit(25));
+        const unsubClientReq = onSnapshot(clientReqQ, (snap) => {
+          if (snap.empty) {
+            insightsMap.set("client-empty", {
+              id: "client-empty",
               type: "opportunity",
-              message: getTranslation("msg_client_new_offers", { count: bidsSnap.size > 0 ? bidsSnap.size : 2, nature: activeReqData.nature || "Fret" }),
-              actionText: getTranslation("intel_action_view_offer"),
-              actionPath: `/dashboard/client/requests?id=${activeClientReq.id}`
-            });
-            
-            // 2. Cost Savings Recommendation (Real-backed)
-            let savingsAmount = 850000;
-            let savingsCarrier = "Transit Express Kankan";
-            
-            if (bidsSnap.size >= 2) {
-              const amounts = bidsSnap.docs.map(d => Number(d.data().amount || 0)).filter(a => a > 0);
-              if (amounts.length >= 2) {
-                const maxAmount = Math.max(...amounts);
-                const minAmount = Math.min(...amounts);
-                savingsAmount = maxAmount - minAmount;
-                const lowestBidDoc = bidsSnap.docs.find(d => Number(d.data().amount) === minAmount);
-                savingsCarrier = lowestBidDoc?.data().transporterName || "Transit Express Kankan";
-              }
-            } else if (bidsSnap.size === 1) {
-              const bidAmt = Number(bidsSnap.docs[0].data().amount || 0);
-              const budget = Number(activeReqData.budget || 0);
-              if (budget > bidAmt) {
-                savingsAmount = budget - bidAmt;
-                savingsCarrier = bidsSnap.docs[0].data().transporterName || "Transit Express Kankan";
-              }
-            }
-            
-            list.push({
-              id: "client-savings-1",
-              type: "saving",
-              message: getTranslation("msg_client_savings", { amount: savingsAmount.toLocaleString(lang === 'en' ? 'en-US' : 'fr-FR'), carrier: savingsCarrier }),
-              actionText: getTranslation("intel_action_view_offer"),
-              actionPath: `/dashboard/client/requests?id=${activeClientReq.id}`
-            });
-          }
-
-          // 3. Stalled delivery warning (Real active client shipment)
-          const activeClientQuery = query(requestsRef, where("clientId", "==", user.uid), where("status", "==", "En cours"), limit(3));
-          const activeClientSnap = await getDocs(activeClientQuery);
-
-          if (activeClientSnap.size > 0) {
-            const firstActive = activeClientSnap.docs[0];
-            const firstActiveData = firstActive.data();
-            const carrierName = firstActiveData.driverName || firstActiveData.transporterName || "Diallo Transport";
-            const fromCity = firstActiveData.from || "Conakry";
-            const toCity = firstActiveData.to || "Labé";
-            
-            list.push({
-              id: "client-stalled-1",
-              type: "alert",
-              message: getTranslation("msg_client_delay_risk", { carrier: carrierName, from: fromCity, to: toCity }),
-              actionText: getTranslation("intel_action_track"),
-              actionPath: `/dashboard/client/tracking?id=${firstActive.id}`
+              priority: 4,
+              message: "💡 Publiez votre première demande de transport pour recevoir des offres de nos transporteurs vérifiés.",
+              actionText: "Créer une demande",
+              actionPath: "/dashboard/client/requests"
             });
           } else {
-            // General active tracking if no personal active shipment
-            const anyActiveQuery = query(requestsRef, where("status", "==", "En cours"), limit(1));
-            const anyActiveSnap = await getDocs(anyActiveQuery);
-            if (anyActiveSnap.size > 0) {
-              const activeData = anyActiveSnap.docs[0].data();
-              list.push({
-                id: "client-stalled-1",
-                type: "alert",
-                message: getTranslation("msg_client_delay_risk", { carrier: activeData.driverName || "Diallo Transport", from: activeData.from || "Conakry", to: activeData.to || "Labé" }),
-                actionText: getTranslation("intel_action_track"),
-                actionPath: "/dashboard/client/tracking"
+            insightsMap.delete("client-empty");
+            
+            snap.docs.forEach((docSnap) => {
+              const req = docSnap.data();
+              const reqId = docSnap.id;
+
+              if (req.status === "En cours" || req.status === "en_route") {
+                insightsMap.set(`client-transit-${reqId}`, {
+                  id: `client-transit-${reqId}`,
+                  type: "tracking",
+                  priority: 2,
+                  message: `🚚 Votre cargaison '${req.nature || 'Marchandises'}' (${req.from || 'Départ'} → ${req.to || 'Arrivée'}) est actuellement en transit.`,
+                  actionText: getTranslation("intel_action_track"),
+                  actionPath: `/tracking/${reqId}`
+                });
+              }
+
+              if (req.status === "incident" || req.incidentReport) {
+                insightsMap.set(`client-incident-${reqId}`, {
+                  id: `client-incident-${reqId}`,
+                  type: "attention",
+                  priority: 1,
+                  message: `🔴 Signalement d'incident enregistré sur votre course '${req.nature || 'Marchandises'}'.`,
+                  actionText: "Voir détails",
+                  actionPath: `/tracking/${reqId}`
+                });
+              }
+            });
+          }
+          updateInsights();
+        }, (err) => console.error("Intel Client req error:", err));
+        unsubscribes.push(unsubClientReq);
+
+      } else if (role === "transporter" || role === "transporter-company") {
+        const availableQ = query(collection(db, "requests"), where("status", "==", "En attente"), limit(25));
+        const unsubAvailable = onSnapshot(availableQ, (snap) => {
+          if (snap.size > 0) {
+            const routes: Record<string, number> = {};
+            snap.docs.forEach((d) => {
+              const req = d.data();
+              if (req.from && req.to) {
+                const key = `${req.from} - ${req.to}`;
+                routes[key] = (routes[key] || 0) + 1;
+              }
+            });
+
+            insightsMap.set("transporter-matches-1", {
+              id: "transporter-matches-1",
+              type: "opportunity",
+              priority: 3,
+              message: getTranslation("msg_transporter_matches", { count: snap.size }),
+              actionText: getTranslation("intel_action_view_missions"),
+              actionPath: role === "transporter" ? "/dashboard/transporter/offers" : "/dashboard/transporter-company/offers"
+            });
+
+            const topRoute = Object.entries(routes).sort((a, b) => b[1] - a[1])[0];
+            if (topRoute && topRoute[1] >= 2) {
+              insightsMap.set("transporter-demand-1", {
+                id: "transporter-demand-1",
+                type: "saving",
+                priority: 3,
+                message: getTranslation("msg_transporter_demand", { route: topRoute[0], count: topRoute[1] }),
+                actionText: getTranslation("intel_action_view_requests"),
+                actionPath: role === "transporter" ? "/dashboard/transporter/offers" : "/dashboard/transporter-company/offers"
               });
             }
-          }
-
-          if (!hasPending) {
-            list.push({
-              id: "client-general-opportunity",
-              type: "opportunity",
-              message: getTranslation("msg_transporter_matches", { count: 3, prefecture: "Conakry" }).replace("demandes de transport correspondent", "transporteurs sont disponibles"),
-              actionText: getTranslation("intel_action_view_requests").replace("demandes", "transporteurs"),
-              actionPath: "/dashboard/client/available-transporters"
-            });
-          }
-
-        } else if (role === "transporter" || role === "transporter-company") {
-          // 1. Fetch pending requests matching transporter location (Real)
-          const requestsRef = collection(db, "requests");
-          const pref = userData.currentPrefecture || userData.headquartersPrefecture || "Conakry";
-          const matchQuery = query(requestsRef, where("status", "==", "En attente"), where("from", "==", pref), limit(5));
-          const matchSnap = await getDocs(matchQuery);
-          
-          list.push({
-            id: "transporter-matches-1",
-            type: "opportunity",
-            message: getTranslation("msg_transporter_matches", { count: matchSnap.size > 0 ? matchSnap.size : 5, prefecture: pref }),
-            actionText: getTranslation("intel_action_view_missions"),
-            actionPath: role === "transporter" ? "/dashboard/transporter/offers" : "/dashboard/transporter-company/offers"
-          });
-
-          // 2. Vehicle document expiry check (Real vehicle expiry dates)
-          let expiringVehicleName = "";
-          let expiringVehicleReg = "";
-          let expiringVehicleDays = 0;
-          
-          if (role === "transporter-company") {
-            const vehiclesCollection = collection(db, "users", user.uid, "vehicles");
-            const vehiclesSnap = await getDocs(vehiclesCollection);
-            
-            for (const doc of vehiclesSnap.docs) {
-              const v = doc.data();
-              if (v.insuranceExpiry) {
-                const exp = v.insuranceExpiry.toDate ? v.insuranceExpiry.toDate() : new Date(v.insuranceExpiry);
-                const diffMs = exp.getTime() - Date.now();
-                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                if (diffDays > 0 && diffDays < 45) {
-                  expiringVehicleName = `${v.brand || ''} ${v.model || 'Camion'}`;
-                  expiringVehicleReg = v.registration || "N/A";
-                  expiringVehicleDays = diffDays;
-                  break;
-                }
-              }
-            }
           } else {
-            const docs = userData.documents || {};
-            for (const [key, dInfo] of Object.entries(docs)) {
-              const info = dInfo as any;
-              if (info?.expiryDate) {
-                const expDate = info.expiryDate.toDate ? info.expiryDate.toDate() : new Date(info.expiryDate);
-                const diffMs = expDate.getTime() - Date.now();
-                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                if (diffDays > 0 && diffDays < 45) {
-                  expiringVehicleName = key === "license" ? "Permis de conduire" : "Assurance véhicule";
-                  expiringVehicleReg = info.docNumber || "Doc";
-                  expiringVehicleDays = diffDays;
-                  break;
-                }
-              }
+            insightsMap.delete("transporter-matches-1");
+            insightsMap.delete("transporter-demand-1");
+          }
+          updateInsights();
+        }, (err) => console.error("Intel Transporter market error:", err));
+        unsubscribes.push(unsubAvailable);
+
+        let foundExpiringDoc = false;
+        const docs = userData.documents || userData.companyDocuments || {};
+        for (const [key, dInfo] of Object.entries(docs)) {
+          const info = dInfo as any;
+          if (info?.expiryDate) {
+            const expDate = info.expiryDate.toDate ? info.expiryDate.toDate() : new Date(info.expiryDate);
+            const diffMs = expDate.getTime() - Date.now();
+            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            if (diffDays > 0 && diffDays < 45) {
+              foundExpiringDoc = true;
+              const docTitle = key === "license" ? "Permis de conduire" : key === "fleetInsurance" ? "Assurance Flotte" : "Attestation transport";
+              insightsMap.set("transporter-expiry-1", {
+                id: "transporter-expiry-1",
+                type: "compliance",
+                priority: 2,
+                message: getTranslation("msg_transporter_insurance", { truck: docTitle, registration: info.docNumber || "N/A", days: diffDays }),
+                actionText: getTranslation("intel_action_manage_fleet"),
+                actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
+              });
+              break;
             }
           }
+        }
 
-          if (expiringVehicleName) {
-            list.push({
-              id: "transporter-expiry-1",
-              type: "compliance",
-              message: getTranslation("msg_transporter_insurance", { truck: expiringVehicleName, registration: expiringVehicleReg, days: expiringVehicleDays }),
-              actionText: getTranslation("intel_action_manage_fleet"),
-              actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
-            });
-          } else {
-            list.push({
-              id: "transporter-expiry-ok",
-              type: "compliance",
-              message: "✅ Tous vos documents de conformité et de flotte sont à jour.",
-              actionText: getTranslation("intel_action_manage_fleet"),
-              actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
-            });
-          }
-
-          // 3. High demand corridor indicator (Real ax statistics)
-          const allPendingQuery = query(requestsRef, where("status", "==", "En attente"));
-          const allPendingSnap = await getDocs(allPendingQuery);
-          
-          let highDemandRoute = "Simandou - Conakry";
-          let demandPercentage = 15;
-
-          if (allPendingSnap.size > 0) {
-            const routes: Record<string, number> = {};
-            allPendingSnap.docs.forEach(doc => {
-              const d = doc.data();
-              if (d.from && d.to) {
-                const routeKey = `${d.from} - ${d.to}`;
-                routes[routeKey] = (routes[routeKey] || 0) + 1;
-              }
-            });
-            
-            const sortedRoutes = Object.entries(routes).sort((a, b) => b[1] - a[1]);
-            if (sortedRoutes.length > 0) {
-              highDemandRoute = sortedRoutes[0][0];
-              demandPercentage = 10 + sortedRoutes[0][1] * 5;
-            }
-          }
-
-          list.push({
-            id: "transporter-demand-1",
-            type: "saving",
-            message: getTranslation("msg_transporter_demand", { route: highDemandRoute, percent: demandPercentage }),
-            actionText: getTranslation("intel_action_view_requests"),
-            actionPath: role === "transporter" ? "/dashboard/transporter/offers" : "/dashboard/transporter-company/offers"
+        if (!foundExpiringDoc) {
+          insightsMap.set("transporter-expiry-ok", {
+            id: "transporter-expiry-ok",
+            type: "compliance",
+            priority: 4,
+            message: "✅ Vos documents administratifs et de conformité sont 100% à jour.",
+            actionText: getTranslation("intel_action_manage_fleet"),
+            actionPath: role === "transporter" ? "/dashboard/transporter/fleet" : "/dashboard/transporter-company/fleet"
           });
         }
-
-        if (active) {
-          setRecommendations(list);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error("Error computing intelligence:", err);
-        if (active) {
-          setLoading(false);
-        }
+        updateInsights();
+      } else {
+        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Error setting up intelligence engine listeners:", err);
+      setLoading(false);
+    }
 
-    computeIntelligence();
-    return () => { active = false; };
+    return () => {
+      unsubscribes.forEach((unsub) => unsub());
+    };
   }, [user, userData, loadingAuth]);
 
   if (loadingAuth || loading) {
@@ -419,13 +295,37 @@ export default function TransconnektIntelligence() {
       <Card className="rounded-3xl border border-indigo-950/20 bg-slate-900/40 p-6 backdrop-blur-md">
         <div className="flex items-center justify-center py-6 gap-2">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-          <span className="text-sm text-slate-400">Génération des recommandations IA...</span>
+          <span className="text-sm text-slate-400">Analyse des données Firestore en temps réel...</span>
         </div>
       </Card>
     );
   }
 
-  if (recommendations.length === 0) return null;
+  if (recommendations.length === 0) {
+    return (
+      <Card className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-slate-950 via-slate-900/95 to-indigo-950/40 p-6 shadow-2xl backdrop-blur-md">
+        <CardHeader className="p-0 pb-3 flex flex-row items-center justify-between border-b border-white/5">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-indigo-400 animate-pulse" />
+            <CardTitle className="text-lg font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-sky-300 to-emerald-400">
+              TransConnekt Intelligence
+            </CardTitle>
+          </div>
+          <Badge className="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] uppercase tracking-widest px-3 py-1 font-bold shrink-0 flex items-center gap-1.5 rounded-full">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+            </span>
+            Moteur IA Actif
+          </Badge>
+        </CardHeader>
+        <CardContent className="p-0 pt-3">
+          <p className="text-xs text-slate-400">
+            Moteur d'intelligence métier actif — Vos opérations logistiques sont sous contrôle. Aucun événement urgent détecté.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const renderMessage = (msg: string) => {
     if (msg.includes("🔴")) {
@@ -441,11 +341,8 @@ export default function TransconnektIntelligence() {
     return msg;
   };
 
-  const pref = userData?.currentPrefecture || userData?.headquartersPrefecture || "Conakry";
-
   return (
     <Card className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-slate-950 via-slate-900/95 to-indigo-950/40 p-6 shadow-2xl backdrop-blur-md">
-      {/* Dynamic aurore glow behind content */}
       <div className="absolute -right-32 -top-32 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
       <div className="absolute -left-32 -bottom-32 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none animate-pulse" />
 
@@ -474,7 +371,6 @@ export default function TransconnektIntelligence() {
       <CardContent className="p-0 pt-5">
         <div className="grid gap-4 md:grid-cols-2">
           {recommendations.map((rec) => {
-            // Pick badge colors and icons based on recommendation type
             let badgeStyle = "";
             let icon: React.ReactNode = null;
             let typeLabel = "";
@@ -525,26 +421,6 @@ export default function TransconnektIntelligence() {
                     <p className="text-xs text-slate-100 font-medium leading-relaxed">
                       {renderMessage(rec.message)}
                     </p>
-                    {rec.id === "transporter-matches-1" && (
-                      <div className="mt-2 grid grid-cols-2 gap-2 pl-1 text-[10px] text-slate-400 font-medium">
-                        <div className="flex items-center gap-1.5 text-emerald-400">
-                          <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                          Localisation ({pref}) ✓
-                        </div>
-                        <div className="flex items-center gap-1.5 text-emerald-400">
-                          <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                          Type de véhicule ✓
-                        </div>
-                        <div className="flex items-center gap-1.5 text-emerald-400">
-                          <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                          Capacité de charge ✓
-                        </div>
-                        <div className="flex items-center gap-1.5 text-emerald-400">
-                          <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                          Disponibilité & Profil ✓
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 

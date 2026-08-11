@@ -8,8 +8,8 @@ export default function TransporterCompanyDashboardOffersPage() {
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Offres & Demandes (Flotte)</h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Offres & Demandes (Flotte)</h1>
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
           Visualisez les opportunités de fret et planifiez l'affectation de vos véhicules.
         </p>
       </div>

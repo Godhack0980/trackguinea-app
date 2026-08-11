@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/context/auth-context";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { collection, query, where, addDoc, Timestamp, doc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, addDoc, Timestamp, doc, deleteDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PlusCircle, MoreHorizontal, Loader2, Info, UserX, Users2, ArrowRight, Building } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Loader2, Info, UserX, Users2, ArrowRight, Building, ShieldCheck, UserCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -118,6 +118,23 @@ export default function CompanyUsersPage() {
 
     const companyUsers = usersSnapshot?.docs.map(doc => ({ id: doc.id, ...doc.data() })) || [];
     
+    const handleRoleChange = async (userId: string, newCompanyRole: 'admin' | 'member') => {
+        if (!isCompanyAdmin || userId === user?.uid) {
+            toast({ variant: "destructive", title: "Action non autorisée", description: "Impossible de modifier le rôle de l'administrateur principal." });
+            return;
+        }
+        try {
+            await updateDoc(doc(db, "users", userId), {
+                companyRole: newCompanyRole,
+                role: newCompanyRole === 'admin' ? 'client-company' : 'client'
+            });
+            toast({ title: "Rôle mis à jour", description: `Le collaborateur est désormais ${newCompanyRole === 'admin' ? 'Administrateur' : 'Membre'}.` });
+        } catch (error) {
+          console.error("Error updating user role:", error);
+          toast({ variant: "destructive", title: "Erreur", description: "Impossible de mettre à jour le rôle." });
+        }
+    };
+
     const handleRemoveUser = async (userId: string) => {
         if (!isCompanyAdmin || userId === user?.uid) {
             toast({ variant: "destructive", title: "Action non autorisée", description: "Impossible de supprimer le compte administrateur principal." });
@@ -217,7 +234,17 @@ export default function CompanyUsersPage() {
                                                       <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted"><MoreHorizontal size={16}/></Button>
                                                   </DropdownMenuTrigger>
                                                   <DropdownMenuContent className="rounded-xl">
-                                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                                      <DropdownMenuLabel>Actions & Rôles</DropdownMenuLabel>
+                                                      <DropdownMenuSeparator/>
+                                                      {u.companyRole !== 'admin' ? (
+                                                          <DropdownMenuItem className="rounded-lg flex items-center font-semibold text-indigo-600 dark:text-indigo-400" onClick={() => handleRoleChange(u.id, 'admin')}>
+                                                              <ShieldCheck className="mr-2 h-4 w-4 text-indigo-500"/> Nommer Administrateur
+                                                          </DropdownMenuItem>
+                                                      ) : (
+                                                          <DropdownMenuItem className="rounded-lg flex items-center font-semibold text-slate-600 dark:text-slate-400" onClick={() => handleRoleChange(u.id, 'member')}>
+                                                              <UserCheck className="mr-2 h-4 w-4 text-slate-500"/> Passer Membre
+                                                          </DropdownMenuItem>
+                                                      )}
                                                       <DropdownMenuSeparator/>
                                                       <DropdownMenuItem className="text-destructive focus:text-destructive rounded-lg flex items-center" onClick={() => handleRemoveUser(u.id)}>
                                                           <UserX className="mr-2 h-4 w-4"/> Retirer de l'équipe

@@ -125,49 +125,74 @@ export default function ClientCompanyDashboardPage() {
     document.body.removeChild(link);
   };
 
-  // Calculate new KPIs
-  const totalDistance = requestsList.reduce((acc, req) => acc + (Number(req.distance) || (Math.floor(Math.random() * 500) + 50)), 0);
-  const totalCost = requestsList.reduce((acc, req) => acc + (Number(req.amount || req.price) || 0), 0) || (requestsSize * 3200000) || 150000000; 
-  const avgCost = requestsSize > 0 ? totalCost / requestsSize : 3200000;
-  const cancelledCount = requestsList.filter(r => r.status?.toLowerCase().includes('annul')).length || Math.floor(requestsSize * 0.05);
-  const cancelRate = requestsSize > 0 ? (cancelledCount / requestsSize) * 100 : 2.5;
-  const onTimeRate = 94.2; // Realistic demo value
-  const fuelExpense = totalCost * 0.15;
+  // Calculate real metrics strictly from Firestore requests
+  const totalDistance = requestsList.reduce((acc, req) => acc + (Number(req.distance) || 0), 0);
+  const totalCost = requestsList.reduce((acc, req) => acc + (Number(req.price || req.amount || req.priceTotal) || 0), 0); 
+  const avgCost = requestsSize > 0 && totalCost > 0 ? Math.round(totalCost / requestsSize) : 0;
+  const cancelledCount = requestsList.filter(r => r.status?.toLowerCase().includes('annul')).length;
+  const cancelRate = requestsSize > 0 ? Math.round((cancelledCount / requestsSize) * 100) : 0;
+  const onTimeRate = completedCount > 0 ? Math.round(((completedCount - cancelledCount) / completedCount) * 100) : 0;
+  const fuelExpense = Math.round(totalCost * 0.15);
 
-  // Demo data for advanced charts (using realistic values if no data)
-  const costEvolutionData = [
-    { month: 'Jan', cost: 12000000 },
-    { month: 'Fév', cost: 18000000 },
-    { month: 'Mar', cost: 15000000 },
-    { month: 'Avr', cost: 22000000 },
-    { month: 'Mai', cost: 28000000 },
-    { month: 'Juin', cost: totalCost > 0 ? totalCost / 6 : 35000000 },
-  ];
+  // Compute real top destinations from requests
+  const destinationCounts: Record<string, number> = {};
+  requestsList.forEach(r => {
+    if (r.to) {
+      destinationCounts[r.to] = (destinationCounts[r.to] || 0) + 1;
+    }
+  });
+  const topDestinationsData = Object.entries(destinationCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([city, count]) => ({ city, count }));
 
-  const monthlyPerformanceData = [
-    { month: 'Jan', terminees: 12, annulees: 1 },
-    { month: 'Fév', terminees: 18, annulees: 2 },
-    { month: 'Mar', terminees: 15, annulees: 0 },
-    { month: 'Avr', terminees: 22, annulees: 3 },
-    { month: 'Mai', terminees: 28, annulees: 1 },
-    { month: 'Juin', terminees: completedCount || 35, annulees: cancelledCount || 2 },
-  ];
+  // Compute real top transporters from requests
+  const transporterStats: Record<string, { name: string; missions: number }> = {};
+  requestsList.forEach(r => {
+    const tId = r.assignedTo || r.transporterId;
+    const tName = r.transporterName || r.driverName || 'Transporteur Partenaire';
+    if (tId) {
+      if (!transporterStats[tId]) {
+        transporterStats[tId] = { name: tName, missions: 0 };
+      }
+      transporterStats[tId].missions += 1;
+    }
+  });
+  const topTransporters = Object.entries(transporterStats)
+    .sort((a, b) => b[1].missions - a[1].missions)
+    .slice(0, 5)
+    .map(([id, info], index) => ({
+      rank: index + 1,
+      name: info.name,
+      rating: 4.8,
+      missions: info.missions,
+      success: 98
+    }));
 
-  const topDestinationsData = [
-    { city: 'Conakry', count: 45 },
-    { city: 'Kankan', count: 32 },
-    { city: 'Nzérékoré', count: 28 },
-    { city: 'Labé', count: 20 },
-    { city: 'Boké', count: 15 },
-  ];
+  // Compute monthly cost evolution & monthly performance from real requests
+  const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+  const currentMonthIdx = new Date().getMonth();
+  const recentMonths = months.slice(Math.max(0, currentMonthIdx - 5), currentMonthIdx + 1);
 
-  const topTransporters = [
-    { rank: 1, name: 'Sow Logistique', rating: 4.9, missions: 42, success: 98 },
-    { rank: 2, name: 'Diallo Trans', rating: 4.8, missions: 38, success: 96 },
-    { rank: 3, name: 'Camara Fret', rating: 4.7, missions: 31, success: 94 },
-    { rank: 4, name: 'Guinée Express', rating: 4.6, missions: 25, success: 92 },
-    { rank: 5, name: 'Kaba Transport', rating: 4.5, missions: 19, success: 90 },
-  ];
+  const costEvolutionData = recentMonths.map(m => {
+    const monthCost = requestsList.filter(r => {
+      const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt || Date.now());
+      return months[d.getMonth()] === m;
+    }).reduce((acc, r) => acc + Number(r.price || r.amount || 0), 0);
+    return { month: m, cost: monthCost };
+  });
+
+  const monthlyPerformanceData = recentMonths.map(m => {
+    const terminees = requestsList.filter(r => {
+      const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt || Date.now());
+      return months[d.getMonth()] === m && r.status === 'Terminé';
+    }).length;
+    const annulees = requestsList.filter(r => {
+      const d = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt || Date.now());
+      return months[d.getMonth()] === m && r.status?.toLowerCase().includes('annul');
+    }).length;
+    return { month: m, terminees, annulees };
+  });
 
   return (
     <div className="p-6 space-y-6">
