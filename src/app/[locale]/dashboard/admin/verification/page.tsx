@@ -5,7 +5,7 @@ import { collection, query, where, doc, updateDoc, orderBy, getDocs, Timestamp }
 import { db } from "@/lib/firebase"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Loader2, ShieldCheck, AlertTriangle, UserCheck, CheckCircle, FileText, Briefcase, Eye, ExternalLink, XCircle, ChevronDown, ChevronUp } from "lucide-react"
+import { Loader2, ShieldCheck, AlertTriangle, UserCheck, CheckCircle, FileText, Briefcase, Eye, ExternalLink, XCircle, ChevronDown, ChevronUp, Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { format } from "date-fns"
