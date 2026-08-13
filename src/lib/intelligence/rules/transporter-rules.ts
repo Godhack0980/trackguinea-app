@@ -125,7 +125,28 @@ export function evaluateTransporterRules(
     }
   }
 
-  if (!foundExpiring) {
+  const isVerified = transporterUserData.isVerified === true;
+  const hasDocs = Object.keys(docs).length > 0;
+
+  if (!isVerified || !hasDocs) {
+    insights.push(
+      buildIntelligenceInsight({
+        id: "transporter-unverified-docs",
+        type: "compliance",
+        priorityLevel: "ATTENTION",
+        message: "⚠️ Compte en attente de vérification : veuillez soumettre vos pièces administratives pour faire certifier votre profil.",
+        actionText: "Soumettre mes documents",
+        actionPath: isCompany ? "/dashboard/transporter-company/documents" : "/dashboard/transporter/documents",
+        proof: {
+          collection: "users",
+          documentId: transporterUserId,
+          fields: ["isVerified", "documents"],
+          reason: `Compte isVerified=${isVerified}, documents présent(s)=${hasDocs}.`
+        },
+        userId: transporterUserId
+      })
+    );
+  } else if (!foundExpiring) {
     insights.push(
       buildIntelligenceInsight({
         id: "transporter-compliance-ok",
@@ -137,8 +158,8 @@ export function evaluateTransporterRules(
         proof: {
           collection: "users",
           documentId: transporterUserId,
-          fields: ["documents"],
-          reason: "Toutes les dates d'expiration des documents sont valides et supérieures à 45 jours."
+          fields: ["documents", "isVerified"],
+          reason: "Le compte est vérifié par l'administration et toutes les dates d'expiration des documents sont valides."
         },
         userId: transporterUserId
       })

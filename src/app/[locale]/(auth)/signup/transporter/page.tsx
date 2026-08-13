@@ -134,7 +134,8 @@ export default function TransporterSignupPage() {
            ...placeholderData, 
            ...values, 
            uid: user.uid,
-           isPlaceholder: false, 
+           isPlaceholder: false,
+           isVerified: false,
            uniqueId: uniqueId,
            role: 'transporter',
            companyId: affiliatedCompanyId || placeholderData.companyId || null,
@@ -164,6 +165,7 @@ export default function TransporterSignupPage() {
           companyName: affiliatedCompanyName || null,
           uniqueId: uniqueId,
           isPlaceholder: false,
+          isVerified: false,
           status: 'disponible',
           createdAt: Timestamp.now(),
         });

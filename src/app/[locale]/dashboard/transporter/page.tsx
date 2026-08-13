@@ -182,10 +182,17 @@ export default function TransporterDashboard() {
             Bienvenue, <span className="font-semibold text-foreground">{userData?.firstName || 'Transporteur'}</span> — Gérez vos missions et estimez vos gains.
           </p>
         </div>
-        <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold px-3 py-1.5">
-          <CheckCircle2 size={12} className="mr-1.5" />
-          Profil Vérifié
-        </Badge>
+        {userData?.isVerified ? (
+          <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold px-3 py-1.5">
+            <CheckCircle2 size={12} className="mr-1.5" />
+            Profil Vérifié
+          </Badge>
+        ) : (
+          <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold px-3 py-1.5">
+            <AlertTriangle size={12} className="mr-1.5 text-amber-400" />
+            En attente de vérification
+          </Badge>
+        )}
       </div>
 
       <TransconnektIntelligence />
