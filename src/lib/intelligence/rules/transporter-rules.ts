@@ -133,7 +133,7 @@ export function evaluateTransporterRules(
       buildIntelligenceInsight({
         id: "transporter-unverified-docs",
         type: "compliance",
-        priorityLevel: "ATTENTION",
+        priorityLevel: "IMPORTANT",
         message: "⚠️ Compte en attente de vérification : veuillez soumettre vos pièces administratives pour faire certifier votre profil.",
         actionText: "Soumettre mes documents",
         actionPath: isCompany ? "/dashboard/transporter-company/documents" : "/dashboard/transporter/documents",
