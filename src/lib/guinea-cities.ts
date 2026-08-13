@@ -23,3 +23,21 @@ export const guineanCities: Record<string, { lat: number, lng: number }> = {
 };
 
 export const cityNames = Object.keys(guineanCities);
+
+export function getGuineanCityCoords(cityRaw: string): { lat: number; lng: number } {
+  if (!cityRaw) return guineanCities["Conakry"];
+  
+  // Clean string: remove country suffix like "(Guinée)", "(Guinea)", or extra spaces/commas
+  const cleanName = cityRaw.split('(')[0].split(',')[0].trim();
+  
+  // 1. Direct exact match
+  if (guineanCities[cleanName]) return guineanCities[cleanName];
+
+  // 2. Case-insensitive or substring match
+  const lowerClean = cleanName.toLowerCase();
+  const foundKey = Object.keys(guineanCities).find(
+    key => key.toLowerCase() === lowerClean || lowerClean.includes(key.toLowerCase()) || key.toLowerCase().includes(lowerClean)
+  );
+
+  return foundKey ? guineanCities[foundKey] : guineanCities["Conakry"];
+}

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { WEST_AFRICA_COUNTRIES, CountryData } from "@/lib/west-africa-locations";
+import { guineanCities } from "@/lib/guinea-cities";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -75,6 +76,33 @@ export function WestAfricaLocationPicker({
   };
 
   const handleRegionChange = (regionVal: string) => {
+    if (regionVal === "CURRENT_GPS_LOCATION") {
+      if (typeof window !== "undefined" && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const { latitude, longitude } = pos.coords;
+            let minD = Infinity;
+            let best = "Conakry";
+            Object.entries(guineanCities).forEach(([cityName, loc]) => {
+              const d = Math.sqrt(Math.pow(latitude - loc.lat, 2) + Math.pow(longitude - loc.lng, 2));
+              if (d < minD) {
+                minD = d;
+                best = cityName;
+              }
+            });
+            setSelectedCountryCode("GN");
+            setSelectedRegion(best);
+            setIsManual(false);
+            onChange(`${best} (Guinée)`);
+          },
+          (err) => {
+            console.warn("Geolocation error:", err);
+          }
+        );
+      }
+      return;
+    }
+
     if (regionVal === "MANUAL_ENTRY") {
       setIsManual(true);
       setSelectedRegion("");
@@ -139,6 +167,9 @@ export function WestAfricaLocationPicker({
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
               <SelectContent className="rounded-2xl max-h-72 z-50">
+                <SelectItem value="CURRENT_GPS_LOCATION" className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 rounded-xl bg-emerald-500/10">
+                  📍 Mon emplacement actuel (Détection GPS auto)...
+                </SelectItem>
                 <SelectItem value="MANUAL_ENTRY" className="text-xs font-bold text-primary rounded-xl">
                   ✏️ Saisie manuelle libre (Entrer une zone spécifique)...
                 </SelectItem>

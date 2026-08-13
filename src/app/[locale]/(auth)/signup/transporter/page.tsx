@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { createUserWithEmailAndPassword } from "firebase/auth"
-import { doc, setDoc, Timestamp, query, where, getDocs, deleteDoc, collection } from "firebase/firestore"
+import { doc, setDoc, Timestamp, query, where, getDocs, getDoc, deleteDoc, collection } from "firebase/firestore"
 import { auth, db } from "@/lib/firebase"
 
 import { Button } from "@/components/ui/button"
@@ -60,6 +60,7 @@ const formSchema = z.object({
   documentType: z.string().min(1, { message: "Le type de pièce est requis." }),
   documentNumber: z.string().min(1, { message: "Le numéro de pièce est requis." }),
   currentPrefecture: z.string().min(1, { message: "La préfecture d'attache est requise." }),
+  companyIdCode: z.string().optional(),
   acceptTerms: z.boolean().refine(val => val === true, {
     message: "Veuillez accepter les CGU et politique de confidentialité.",
   }),
@@ -103,6 +104,28 @@ export default function TransporterSignupPage() {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
       const uniqueId = `TG-IND-${randomNum}`;
 
+      // Check for Pro Enterprise Affiliation via companyIdCode
+      let affiliatedCompanyId: string | null = null;
+      let affiliatedCompanyName: string | null = null;
+
+      if (values.companyIdCode && values.companyIdCode.trim()) {
+        const code = values.companyIdCode.trim();
+        const compSnap = await getDoc(doc(db, "users", code));
+        if (compSnap.exists()) {
+          const cData = compSnap.data();
+          affiliatedCompanyId = cData.uid || code;
+          affiliatedCompanyName = cData.companyName || `${cData.firstName || ''} ${cData.lastName || ''}`.trim();
+        } else {
+          const compQuery = query(collection(db, "users"), where("uniqueId", "==", code));
+          const compQuerySnap = await getDocs(compQuery);
+          if (!compQuerySnap.empty) {
+            const cData = compQuerySnap.docs[0].data();
+            affiliatedCompanyId = cData.uid;
+            affiliatedCompanyName = cData.companyName || `${cData.firstName || ''} ${cData.lastName || ''}`.trim();
+          }
+        }
+      }
+
       if (!querySnapshot.empty) {
         const placeholderDoc = querySnapshot.docs[0];
         const placeholderData = placeholderDoc.data();
@@ -114,6 +137,8 @@ export default function TransporterSignupPage() {
            isPlaceholder: false, 
            uniqueId: uniqueId,
            role: 'transporter',
+           companyId: affiliatedCompanyId || placeholderData.companyId || null,
+           companyName: affiliatedCompanyName || placeholderData.companyName || null,
            status: 'disponible',
            createdAt: Timestamp.now(),
         });
@@ -135,6 +160,8 @@ export default function TransporterSignupPage() {
           documentType: values.documentType,
           documentNumber: values.documentNumber,
           currentPrefecture: values.currentPrefecture,
+          companyId: affiliatedCompanyId || null,
+          companyName: affiliatedCompanyName || null,
           uniqueId: uniqueId,
           isPlaceholder: false,
           status: 'disponible',
@@ -328,6 +355,23 @@ export default function TransporterSignupPage() {
                 )}
               />
             </div>
+
+            <FormField
+              control={form.control}
+              name="companyIdCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-slate-200 font-semibold text-xs flex items-center justify-between">
+                    <span>ID Unique d'Entreprise Pro (Facultatif)</span>
+                    <span className="text-[10px] text-indigo-400 font-normal">Si vous êtes affilié à une société</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: UID ou TG-PRO-XXXX" className="bg-[#0D1322] border-slate-800 text-white placeholder-slate-500 rounded-xl h-11 focus-visible:ring-primary" {...field} />
+                  </FormControl>
+                  <FormMessage className="text-red-400 text-xs" />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}

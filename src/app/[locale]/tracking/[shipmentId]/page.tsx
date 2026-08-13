@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { guineanCities } from '@/lib/guinea-cities';
+import { guineanCities, getGuineanCityCoords } from '@/lib/guinea-cities';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -238,8 +238,8 @@ export default function ClientTrackingPage() {
   useEffect(() => {
     if (loading || !shipment || !mapContainerRef.current) return;
 
-    const fromCoords = guineanCities[shipment.from] || guineanCities["Conakry"];
-    const toCoords = guineanCities[shipment.to] || guineanCities["Mamou"];
+    const fromCoords = getGuineanCityCoords(shipment.from);
+    const toCoords = getGuineanCityCoords(shipment.to);
 
     const centerLng = (fromCoords.lng + toCoords.lng) / 2;
     const centerLat = (fromCoords.lat + toCoords.lat) / 2;

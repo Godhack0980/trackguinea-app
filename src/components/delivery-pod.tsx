@@ -143,34 +143,26 @@ export default function DeliveryPod({ shipmentId, requestId, isOpen, onClose, on
   };
 
   const handleConfirm = async () => {
-    if (!recipientName.trim()) {
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Le nom du réceptionnaire est requis.' });
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    // Check if canvas is empty (basic check: see if any non-zero pixels exist)
-    const ctx = canvas.getContext('2d');
-    const buffer = ctx ? ctx.getImageData(0, 0, canvas.width, canvas.height).data : [];
-    const isCanvasEmpty = !Array.from(buffer).some(val => val !== 0);
-
-    if (isCanvasEmpty) {
-      toast({ variant: 'destructive', title: 'Erreur', description: 'La signature du destinataire est requise.' });
-      return;
-    }
-
     setSubmitting(true);
     try {
-      const signatureUrl = canvas.toDataURL(); // Base64 signature
+      const canvas = canvasRef.current;
+      let signatureUrl = '';
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        const buffer = ctx ? ctx.getImageData(0, 0, canvas.width, canvas.height).data : [];
+        const isCanvasEmpty = !Array.from(buffer).some(val => val !== 0);
+        if (!isCanvasEmpty) {
+          signatureUrl = canvas.toDataURL();
+        }
+      }
       
+      const finalRecipient = recipientName.trim() || 'Client / Réceptionnaire direct';
       const podData = {
-        recipientName: recipientName.trim(),
-        remarks: remarks.trim(),
+        recipientName: finalRecipient,
+        remarks: remarks.trim() || 'Livraison effectuée avec succès',
         photoUrl: photoBase64 || '',
         signatureUrl,
-        lat: gpsCoords?.lat || 9.53, // fallback to Conakry coordinates
+        lat: gpsCoords?.lat || 9.53,
         lng: gpsCoords?.lng || -13.67,
         timestamp: Date.now()
       };
@@ -195,11 +187,11 @@ export default function DeliveryPod({ shipmentId, requestId, isOpen, onClose, on
         senderId: 'system',
         senderName: 'Système',
         senderRole: 'system',
-        text: `📦 Mission livrée. Destinataire: ${recipientName.trim()}. Preuve de livraison (POD) enregistrée et signée.`,
+        text: `📦 Mission livrée. Destinataire: ${finalRecipient}. Preuve enregistrée.`,
         timestamp: Timestamp.now()
       });
 
-      toast({ title: 'Succès ! 🎉', description: 'La livraison a été confirmée et signée.' });
+      toast({ title: 'Succès ! 🎉', description: 'La livraison a été confirmée.' });
       onSuccess();
       onClose();
     } catch (e) {

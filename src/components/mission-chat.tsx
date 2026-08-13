@@ -140,8 +140,19 @@ export default function MissionChat({ shipmentId, missionNumber }: MissionChatPr
 
     try {
       await addDoc(collection(db, `shipments/${shipmentId}/messages`), payload);
+      try {
+        await addDoc(collection(db, `requests/${shipmentId}/messages`), payload);
+      } catch (subErr) {
+        // Ignore if request subcollection isn't configured
+      }
     } catch (err) {
-      console.error("Error sending mission message:", err);
+      console.error("Error sending mission message to shipments:", err);
+      // Fallback try writing to requests
+      try {
+        await addDoc(collection(db, `requests/${shipmentId}/messages`), payload);
+      } catch (reqErr) {
+        console.error("Error sending mission message to requests:", reqErr);
+      }
     } finally {
       setSending(false);
     }
