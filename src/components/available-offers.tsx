@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { createNotification } from "@/lib/notifications";
 import { useTranslation } from "@/lib/translations";
+import { checkTransporterHasActiveMission } from "@/lib/transporter-availability";
 
 const prefecturesGuinea = [
   "Conakry", "Beyla", "Boffa", "Boké", "Coyah", "Dabola", "Dalaba", "Dinguiraye", 
@@ -105,6 +106,17 @@ export default function AvailableOffersComponent() {
       toast({
         title: t('available_offers.toast_already_applied_title'),
         description: t('available_offers.toast_already_applied_desc')
+      });
+      return;
+    }
+
+    // Check if transporter has an active mission in progress
+    const activeCheck = await checkTransporterHasActiveMission(currentUser.uid);
+    if (activeCheck.hasActive) {
+      toast({
+        variant: "destructive",
+        title: "Candidature impossible",
+        description: `Vous avez déjà une course active en cours ("${activeCheck.activeMissionTitle}"). Vous devez terminer votre course actuelle avant de pouvoir postuler à une nouvelle offre.`
       });
       return;
     }

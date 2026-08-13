@@ -26,6 +26,7 @@ import type { TransportRequest } from "@/ai/types";
 import { createNotification } from "@/lib/notifications";
 import { useTranslation } from "@/lib/translations";
 import { DateFilterPicker } from "@/components/date-filter-picker";
+import { checkTransporterHasActiveMission } from "@/lib/transporter-availability";
 
 export default function ClientRequestsPage() {
   const { user, userData, loadingAuth } = useAuth();
@@ -119,6 +120,17 @@ export default function ClientRequestsPage() {
      if (!user) {
         toast({ variant: "destructive", title: "Non authentifié" });
         return;
+    }
+
+    // Check if candidate transporter has an active mission in progress
+    const activeCheck = await checkTransporterHasActiveMission(transporterId);
+    if (activeCheck.hasActive) {
+      toast({
+        variant: "destructive",
+        title: "Attribution impossible",
+        description: `Ce transporteur a déjà une course active en cours ("${activeCheck.activeMissionTitle}"). Il doit terminer sa course actuelle avant de pouvoir accepter une nouvelle mission.`
+      });
+      return;
     }
     try {
         const transporterDocRef = doc(db, 'users', transporterId);

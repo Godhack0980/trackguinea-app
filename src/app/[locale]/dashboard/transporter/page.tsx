@@ -89,6 +89,17 @@ export default function TransporterDashboard() {
       return;
     }
 
+    // Check if transporter has an active mission
+    const activeCheck = await checkTransporterHasActiveMission(user.uid);
+    if (activeCheck.hasActive) {
+      toast({
+        variant: "destructive",
+        title: "Candidature impossible",
+        description: `Vous avez déjà une course active en cours ("${activeCheck.activeMissionTitle}"). Vous devez terminer votre course actuelle avant de pouvoir postuler à une nouvelle offre.`
+      });
+      return;
+    }
+
     try {
       const docRef = doc(db, `requests`, request.id);
       await updateDoc(docRef, {
