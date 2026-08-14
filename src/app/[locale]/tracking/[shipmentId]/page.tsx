@@ -241,8 +241,8 @@ export default function ClientTrackingPage() {
     let isSubscribed = true;
 
     const initMap = async () => {
-      const fromCoords = await getGuineanCityCoordsAsync(shipment.from, mapboxgl.accessToken);
-      const toCoords = await getGuineanCityCoordsAsync(shipment.to, mapboxgl.accessToken);
+      const fromCoords = await getGuineanCityCoordsAsync(shipment.from, mapboxgl.accessToken || undefined);
+      const toCoords = await getGuineanCityCoordsAsync(shipment.to, mapboxgl.accessToken || undefined);
 
       if (!isSubscribed || !mapContainerRef.current) return;
 
@@ -313,7 +313,8 @@ export default function ClientTrackingPage() {
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': '#10b981', 'line-width': 5, 'line-opacity': 0.9 }
       });
-    };
+    });
+  };
 
     initMap();
 
