@@ -424,7 +424,7 @@ export default function ProfilePage() {
                                     <p className="font-bold text-lg">{userData.experienceYears || 0}</p>
                                 </Card>
                             </div>
-                            {userData.isVerified === false && (
+                            {!userData?.isVerified && (
                                 <Badge variant="destructive" className="w-full justify-center text-base p-2">
                                 <AlertTriangle className="mr-2" />
                                 Profil en attente de vérification

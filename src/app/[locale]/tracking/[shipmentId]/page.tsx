@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, onSnapshot, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { guineanCities, getGuineanCityCoords } from '@/lib/guinea-cities';
+import { guineanCities, getGuineanCityCoords, getGuineanCityCoordsAsync } from '@/lib/guinea-cities';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -238,22 +238,27 @@ export default function ClientTrackingPage() {
   useEffect(() => {
     if (loading || !shipment || !mapContainerRef.current) return;
 
-    const fromCoords = getGuineanCityCoords(shipment.from);
-    const toCoords = getGuineanCityCoords(shipment.to);
+    let isSubscribed = true;
 
-    const centerLng = (fromCoords.lng + toCoords.lng) / 2;
-    const centerLat = (fromCoords.lat + toCoords.lat) / 2;
+    const initMap = async () => {
+      const fromCoords = await getGuineanCityCoordsAsync(shipment.from, mapboxgl.accessToken);
+      const toCoords = await getGuineanCityCoordsAsync(shipment.to, mapboxgl.accessToken);
 
-    const mapInstance = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: [centerLng, centerLat],
-      zoom: 6.2,
-      attributionControl: false
-    });
+      if (!isSubscribed || !mapContainerRef.current) return;
 
-    mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    mapRef.current = mapInstance;
+      const centerLng = (fromCoords.lng + toCoords.lng) / 2;
+      const centerLat = (fromCoords.lat + toCoords.lat) / 2;
+
+      const mapInstance = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [centerLng, centerLat],
+        zoom: 6.2,
+        attributionControl: false
+      });
+
+      mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+      mapRef.current = mapInstance;
 
     mapInstance.on('load', () => {
       setMapLoaded(true);
@@ -308,11 +313,16 @@ export default function ClientTrackingPage() {
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: { 'line-color': '#10b981', 'line-width': 5, 'line-opacity': 0.9 }
       });
-    });
+    };
+
+    initMap();
 
     return () => {
-      if (mapInstance) mapInstance.remove();
-      mapRef.current = null;
+      isSubscribed = false;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
     };
   }, [loading]);
 

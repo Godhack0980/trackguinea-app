@@ -50,29 +50,60 @@ const VerifyDeliveryOTPDialog = ({ job, transporterId, onSuccess }: { job: Trans
 
     const handleVerify = async () => {
         const entered = otp.trim();
-        const expected = String(job.otpCode || '').trim();
-        if (entered !== expected && entered !== '1234') {
+        if (!entered) {
             toast({
                 variant: "destructive",
-                title: "Code OTP Incorrect",
-                description: `Le code fourni par le client (${expected || 'non défini'}) ne correspond pas.`
+                title: "Code Requis",
+                description: "Veuillez entrer le code OTP à 4 chiffres transmis par le client."
             });
             return;
         }
 
         setIsSubmitting(true);
         try {
+            // Fetch live OTP from Firestore documents if job.otpCode is missing or needs refresh
+            let liveOtp = String(job.otpCode || '').trim();
+            if (!liveOtp) {
+                try {
+                    const reqSnap = await getDoc(doc(db, 'requests', job.id));
+                    if (reqSnap.exists()) {
+                        liveOtp = String(reqSnap.data().otpCode || reqSnap.data().otp || '').trim();
+                    }
+                    if (!liveOtp) {
+                        const shipSnap = await getDoc(doc(db, 'shipments', job.id));
+                        if (shipSnap.exists()) {
+                            liveOtp = String(shipSnap.data().otpCode || shipSnap.data().otp || '').trim();
+                        }
+                    }
+                } catch (fetchErr) {
+                    console.warn("Error fetching live OTP code:", fetchErr);
+                }
+            }
+
+            // Verify if entered matches live OTP, demo code 1234, or if live OTP wasn't set, allow 4-digit code
+            const isValid = entered === liveOtp || entered === '1234' || (entered.length === 4 && !liveOtp);
+
+            if (!isValid) {
+                toast({
+                    variant: "destructive",
+                    title: "Code OTP Incorrect",
+                    description: `Le code saisi (${entered}) ne correspond pas au code client.`
+                });
+                setIsSubmitting(false);
+                return;
+            }
+
             await releaseEscrowPayment(job.id, transporterId);
             
             await createNotification({
                 userId: job.clientId,
-                message: `Votre livraison pour la course "${job.nature}" a été validée avec succès. Merci d'avoir choisi TransConnekt !`,
+                message: `Votre livraison pour la course "${job.nature}" a été validée avec succès par le code OTP. Merci d'avoir choisi TransConnekt !`,
                 href: `/dashboard/client/history`
             });
 
             toast({
                 title: "Livraison Validée !",
-                description: "Le paiement a été libéré et crédité sur votre portefeuille."
+                description: "Le code OTP a été validé et le paiement a été crédité sur votre portefeuille."
             });
             setOpen(false);
             onSuccess();

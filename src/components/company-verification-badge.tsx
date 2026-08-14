@@ -27,12 +27,12 @@ export default function CompanyVerificationBadge({
   className
 }: CompanyVerificationBadgeProps) {
 
-  const isVerified = data?.isVerified ?? true; // Default to verified for demo if verified
-  const phone = data?.phoneVerified ?? true;
-  const identity = data?.identityVerified ?? true;
-  const docs = data?.companyDocsVerified ?? true;
-  const license = data?.transportLicenseVerified ?? true;
-  const insurance = data?.insuranceVerified ?? true;
+  const isVerified = Boolean(data?.isVerified);
+  const phone = Boolean(data?.phoneVerified);
+  const identity = Boolean(data?.identityVerified);
+  const docs = Boolean(data?.companyDocsVerified);
+  const license = Boolean(data?.transportLicenseVerified);
+  const insurance = Boolean(data?.insuranceVerified);
 
   if (!isVerified) {
     return (

@@ -53,7 +53,7 @@ export default function MissionChat({ shipmentId, missionNumber }: MissionChatPr
 
   const currentUserRole = userData?.role || 'client';
 
-  // Listen to messages
+  // Listen to messages across both shipments and requests collections for 100% real-time reliability
   useEffect(() => {
     if (!shipmentId) {
       setLoading(false);
@@ -61,39 +61,58 @@ export default function MissionChat({ shipmentId, missionNumber }: MissionChatPr
     }
 
     setLoading(true);
-    const messagesRef = collection(db, `shipments/${shipmentId}/messages`);
-    const q = query(messagesRef, orderBy('timestamp', 'asc'));
+    let msgsShipments: Message[] = [];
+    let msgsRequests: Message[] = [];
 
-    // Safety timer to prevent infinite loading spinner
+    const updateMergedMessages = () => {
+      const allMsgsMap = new Map<string, Message>();
+      [...msgsShipments, ...msgsRequests].forEach(m => {
+        allMsgsMap.set(m.id, m);
+      });
+      const sorted = Array.from(allMsgsMap.values()).sort((a, b) => {
+        const timeA = a.timestamp?.seconds || 0;
+        const timeB = b.timestamp?.seconds || 0;
+        return timeA - timeB;
+      });
+      setMessages(sorted);
+      setLoading(false);
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 100);
+    };
+
     const timer = setTimeout(() => setLoading(false), 2500);
 
-    const unsubscribe = onSnapshot(
-      q, 
-      (snapshot) => {
+    const refShip = collection(db, `shipments/${shipmentId}/messages`);
+    const qShip = query(refShip, orderBy('timestamp', 'asc'));
+    const unsubShip = onSnapshot(
+      qShip,
+      (snap) => {
         clearTimeout(timer);
-        const msgs = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Message[];
-        setMessages(msgs);
-        setLoading(false);
-
-        setTimeout(() => {
-          if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-          }
-        }, 100);
+        msgsShipments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+        updateMergedMessages();
       },
-      (err) => {
+      (err) => console.warn("MissionChat shipment onSnapshot:", err)
+    );
+
+    const refReq = collection(db, `requests/${shipmentId}/messages`);
+    const qReq = query(refReq, orderBy('timestamp', 'asc'));
+    const unsubReq = onSnapshot(
+      qReq,
+      (snap) => {
         clearTimeout(timer);
-        console.error("MissionChat onSnapshot error:", err);
-        setLoading(false);
-      }
+        msgsRequests = snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Message));
+        updateMergedMessages();
+      },
+      (err) => console.warn("MissionChat request onSnapshot:", err)
     );
 
     return () => {
       clearTimeout(timer);
-      unsubscribe();
+      unsubShip();
+      unsubReq();
     };
   }, [shipmentId]);
 
