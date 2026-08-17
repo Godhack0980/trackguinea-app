@@ -41,7 +41,19 @@ export default function AvailableOffersComponent() {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [hasActiveMission, setHasActiveMission] = useState<boolean>(false);
 
+  // Fetch active mission status for current user
+  useEffect(() => {
+    if (currentUser) {
+      (async () => {
+        const activeCheck = await checkTransporterHasActiveMission(currentUser.uid);
+        setHasActiveMission(activeCheck.hasActive);
+      })();
+    } else {
+      setHasActiveMission(false);
+    }
+  }, [currentUser]);
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user: any) => {
       setCurrentUser(user);
@@ -420,7 +432,7 @@ export default function AvailableOffersComponent() {
                     <Button 
                       size="sm" 
                       onClick={() => handleApply(req)}
-                      disabled={applyingId === req.id || (currentUser && req.applicants && req.applicants.includes(currentUser.uid))}
+                      disabled={applyingId === req.id || (currentUser && req.applicants && req.applicants.includes(currentUser.uid)) || hasActiveMission}
                       className={cn(
                         "h-7 text-[10px] font-bold rounded-lg px-2.5 border-0 shadow-sm transition-all",
                         (currentUser && req.applicants && req.applicants.includes(currentUser.uid))
